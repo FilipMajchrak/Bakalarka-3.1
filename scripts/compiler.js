@@ -9,20 +9,31 @@ window.onload = () => {
     });
 
   // Funkcia na vyhodnotenie vyrazu s premennymi
-function evalExpr(expr, variables) 
-{
+function evalExpr(expr, variables) {
     let evaluated = expr;
+
     for (const [key, value] of Object.entries(variables)) 
     {
-      evaluated = evaluated.replaceAll(new RegExp(`\b${key}\b`, 'g'), value);
+        // Nahrad iba existujuce premenne
+        const regex = new RegExp(`\\b${key}\\b`, 'g');
+        evaluated = evaluated.replace(regex, value);
     }
+
+  // Zabezpec, ze sa nepouzivaju nezname premenne
+    const unknowns = evaluated.match(/\b[a-zA-Z_]\w*\b/g)?.filter(id => !(id in variables));
+    if (unknowns && unknowns.length > 0) 
+    {
+        console.warn("Nedefinovane premenne:", unknowns);
+        return NaN; // alebo 0 alebo vyhodit chybu
+    }
+
     try 
     {
-      return eval(evaluated);
+        return eval(evaluated);
     } 
     catch 
     {
-      return NaN;
+        return NaN;
     }
 }
 
