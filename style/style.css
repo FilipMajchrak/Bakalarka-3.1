@@ -1,0 +1,109 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: 'Consolas', monospace;
+  background-color: #1e1e1e;
+  color: #d4d4d4;
+  overflow: hidden;
+}
+
+.split-container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  padding: 0.5rem;
+  overflow: auto;
+  height: 100%;
+}
+
+.left-panel {
+  width: 60%;
+  min-width: 200px;
+  resize: horizontal;
+  overflow: auto;
+  border-right: 1px solid #444;
+  background-color: #1e1e1e;
+}
+
+.right-panel {
+  flex: 1;
+  min-width: 200px;
+  border-left: 1px solid #444;
+  background-color: #1e1e1e;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.output-and-globals {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 100px;
+}
+
+#output {
+  height: 50%;
+  background: #252526;
+  padding: 0.5rem;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  font-family: monospace;
+  border: 1px solid #333;
+  margin-bottom: 0;
+}
+
+.vertical-resizer {
+  height: 6px;
+  background-color: #555;
+  cursor: row-resize;
+  margin: 0;
+}
+
+.globals-panel {
+  flex: 1;
+  overflow: auto;
+  background: #252526;
+  padding: 0.5rem 0;
+  margin-top: 0;
+}
+
+#globals-table {
+  flex: 1;
+  background: #252526;
+  font-family: monospace;
+  font-size: 14px;
+  color: #d4d4d4;
+  border-top: 1px solid #444;
+  overflow-y: auto;
+  margin: 0;
+}
+
+.CodeMirror {
+  flex: 1;
+  height: auto;
+  background: #1e1e1e;
+  color: #d4d4d4;
+  font-size: 14px;
+  border: 1px solid #333;
+}
+
+.CodeMirror-cursor {
+  border-left: 2px solid #00ff00 !important; /* Jasne zelený kurzor */
+}
+
+#editor {
+  height: 100%;
+}
+
+#run {
+  margin-top: 0.5rem;
+  align-self: flex-start;
+}
