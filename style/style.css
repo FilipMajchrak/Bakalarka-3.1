@@ -126,6 +126,6 @@ html, body {
 }
 
 #run {
-  margin-top: 0.5rem;
-  align-self: flex-start;
+  z-index: 1;
+  position: relative;
 }
