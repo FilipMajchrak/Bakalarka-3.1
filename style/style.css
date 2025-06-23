@@ -23,7 +23,7 @@ html, body {
 }
 
 .left-panel {
-  width: 60%;
+  width: 75%;
   min-width: 200px;
   resize: horizontal;
   overflow: auto;
@@ -60,11 +60,18 @@ html, body {
   margin-bottom: 0;
 }
 
-.vertical-resizer {
+.v-resizer {
   height: 6px;
   background-color: #555;
   cursor: row-resize;
   margin: 0;
+}
+
+#h-resizer {
+  width: 5px;
+  background: #444;
+  cursor: col-resize;
+  height: 100%;
 }
 
 .globals-panel {
