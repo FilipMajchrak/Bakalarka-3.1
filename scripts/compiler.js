@@ -59,55 +59,78 @@ window.onload = () => {
 
             // IF podmienka
             if (line.startsWith("IF ") && line.endsWith("THEN")) 
-                {
-                    const condition = line.slice(3, -4).trim();
-                    const result = evalExpr(condition, variables);
-                    ifStack.push(result);
-                    executing = result;
-                    continue;
-                }
+            {
+                const condition = line.slice(3, -4).trim();
+                const result = evalExpr(condition, variables);
+                ifStack.push(result);
+                executing = result;
+                continue;
+            }
+
             // ELSE
             if (line === "ELSE") 
+            {
+                if (ifStack.length > 0) 
                 {
-                    if (ifStack.length > 0) 
-                    {
-                        executing = !ifStack[ifStack.length - 1];
-                    }
-                    continue;
+                    executing = !ifStack[ifStack.length - 1];
                 }
+                continue;
+            }
+
             // END_IF
             if (line === "END_IF") 
-                {
-                    ifStack.pop();
-                    executing = ifStack.length === 0 || ifStack[ifStack.length - 1];
-                    continue;
-                }
+            {
+                ifStack.pop();
+                executing = ifStack.length === 0 || ifStack[ifStack.length - 1];
+                continue;
+            }
+
             // Deklaracia premennej v ramci VAR alebo VAR_GLOBAL
             if ((inVar || inGlobalVar) && executing) 
+            {
+                const match = line.match(/(\w+)\s*:\s*(\w+)\s*(?::=)?\s*([^;]*)?;/);
+                if (match) 
                 {
-                    const match = line.match(/(\w+)\s*:\s*\w+\s*(?::=)?\s*(-?\d+)?;/);
-                    if (match) {
-                    const [, name, value] = match;
-                    const val = value !== undefined ? parseInt(value) : 0;
+                    const [, name, type, rawValue] = match;
+                    let val = 0;
+
+                    switch (type.toUpperCase()) 
+                    {
+                        case "INT":
+                        case "WORD":
+                            val = parseInt(rawValue) || 0;
+                            break;
+                        case "REAL":
+                            val = parseFloat(rawValue) || 0.0;
+                            break;
+                        case "BOOL":
+                            val = rawValue?.toUpperCase() === "TRUE";
+                            break;
+                        default:
+                            val = 0;
+                    }
+
                     variables[name] = val;
                     if (inGlobalVar) globalVariables[name] = val;
-                    }
                 }
+            }
+
             // Priradenie hodnoty do premennej
             else if (executing) 
+            {
+                const match = line.match(/(\w+)\s*:=\s*(.+);/);
+                if (match) 
                 {
-                    const match = line.match(/(\w+)\s*:=\s*(.+);/);
-                    if (match) 
+                    const [, name, expr] = match;
+                    variables[name] = evalExpr(expr, variables);
+                    if (globalVariables.hasOwnProperty(name)) 
                     {
-                        const [, name, expr] = match;
-                        variables[name] = evalExpr(expr, variables);
-                        if (globalVariables.hasOwnProperty(name)) 
-                        {
-                            globalVariables[name] = variables[name];
-                        }
+                        globalVariables[name] = variables[name];
                     }
                 }
+            }
         }
+
         return { variables, globalVariables };
     }
 
