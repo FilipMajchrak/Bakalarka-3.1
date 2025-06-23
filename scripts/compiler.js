@@ -66,25 +66,22 @@ function runST(code)
                 executing = result;
                 continue;
             }
-
         // ELSE
         if (line === "ELSE") 
             {
-            if (ifStack.length > 0) 
-            {
-            executing = !ifStack[ifStack.length - 1];
+                if (ifStack.length > 0) 
+                {
+                    executing = !ifStack[ifStack.length - 1];
+                }
+                continue;
             }
-            continue;
-            }
-
         // END_IF
         if (line === "END_IF") 
             {
-            ifStack.pop();
-            executing = ifStack.length === 0 || ifStack[ifStack.length - 1];
-            continue;
+                ifStack.pop();
+                executing = ifStack.length === 0 || ifStack[ifStack.length - 1];
+                continue;
             }
-
         // Deklaracia premennej v ramci VAR alebo VAR_GLOBAL
         if ((inVar || inGlobalVar) && executing) 
             {
@@ -96,21 +93,21 @@ function runST(code)
                 if (inGlobalVar) globalVariables[name] = val;
                 }
             }
-
         // Priradenie hodnoty do premennej
         else if (executing) 
             {
                 const match = line.match(/(\w+)\s*:=\s*(.+);/);
-                if (match) {
-                const [, name, expr] = match;
-                variables[name] = evalExpr(expr, variables);
-                if (globalVariables.hasOwnProperty(name)) {
-                    globalVariables[name] = variables[name];
-                }
+                if (match) 
+                {
+                    const [, name, expr] = match;
+                    variables[name] = evalExpr(expr, variables);
+                    if (globalVariables.hasOwnProperty(name)) 
+                    {
+                        globalVariables[name] = variables[name];
+                    }
                 }
             }
     }
-
     return { variables, globalVariables };
 }
 
@@ -131,8 +128,7 @@ function renderGlobals(variables)
 document.getElementById("run").addEventListener("click", () => {
     const code = editor.getValue();
     const result = runST(code);
-    document.getElementById("output").innerHTML =
-      "<pre>" + JSON.stringify(result.variables, null, 2) + "</pre>";
+    document.getElementById("output").innerHTML = "<pre>" + JSON.stringify(result.variables, null, 2) + "</pre>";
     renderGlobals(result.globalVariables);
   });
 };
