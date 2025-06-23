@@ -19,6 +19,7 @@
   <div class="split-container">
     <div class="panel left-panel">
       <h6>ST Kód</h6>
+      <!--testovny text potom vymazat-->
       <textarea id="editor">// Tvoj ST kód sem
 VAR
   x : INT := 10;
@@ -32,15 +33,18 @@ ELSE
   z := y;
 END_IF
 
-x := x + y;</textarea>
+x := x + y;
+      </textarea>
       <button id="run" class="btn btn-sm btn-primary mt-2">▶ Spustiť</button>
     </div>
+
+    <div id="h-resizer" data-resize="x"></div>
 
     <div class="panel right-panel">
       <h6>Výstup</h6>
       <div class="output-and-globals">
         <div id="output"></div>
-        <div class="vertical-resizer" id="v-resizer"></div>
+        <div class="v-resizer" id="v-resizer" data-resize="y"></div>
         <div class="globals-panel">
           <h6>Globálne premenné</h6>
           <table class="table table-dark table-bordered table-sm" id="globals-table">

@@ -141,9 +141,9 @@ window.onload = () => {
         tableBody.innerHTML = "";
         for (const [name, value] of Object.entries(variables)) 
         {
-        const row = document.createElement("tr");
-        row.innerHTML = `<td>${name}</td><td>${value}</td>`;
-        tableBody.appendChild(row);
+            const row = document.createElement("tr");
+            row.innerHTML = `<td>${name}</td><td>${value}</td>`;
+            tableBody.appendChild(row);
         }
     }
 
