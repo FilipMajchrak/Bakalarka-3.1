@@ -99,6 +99,21 @@ html, body {
   border-left: 2px solid #00ff00 !important; /* Jasne zelený kurzor */
 }
 
+
+.CodeMirror-selected {
+  background-color: #264f78 !important; /* Tmavomodre pozadie */
+}
+
+.CodeMirror ::selection {
+  background: #264f78 !important;
+  color: #ffffff !important;
+}
+
+.CodeMirror ::-moz-selection {
+  background: #264f78 !important;
+  color: #ffffff !important;
+}
+
 #editor {
   height: 100%;
 }
