@@ -57,17 +57,29 @@ window.onload = () => {
         let inCase = false;
         let caseValue = null;
         let caseMatched = false;
+        let caseFound = false;
 
         for (let i = 0; i < lines.length; i++) 
         {
             let line = lines[i].trim();
 
-            // Detekcia blokov VAR a VAR_GLOBAL
-            if (line === "VAR") { inVar = true; continue; }
-            if (line === "VAR_GLOBAL") { inGlobalVar = true; continue; }
-            if (line === "END_VAR") { inVar = false; inGlobalVar = false; continue; }
+            if (line === "VAR") 
+            {
+                inVar = true;
+                continue;
+            }
+            if (line === "VAR_GLOBAL") 
+            {
+                inGlobalVar = true;
+                continue;
+            }
+            if (line === "END_VAR") 
+            {
+                inVar = false;
+                inGlobalVar = false;
+                continue;
+            }
 
-            // IF podmienka
             if (line.startsWith("IF ") && line.endsWith("THEN")) 
             {
                 const condition = line.slice(3, -4).trim();
@@ -77,8 +89,7 @@ window.onload = () => {
                 continue;
             }
 
-            // ELSE
-            if (line === "ELSE") 
+            if (line === "ELSE" && !inCase) 
             {
                 if (ifStack.length > 0) 
                 {
@@ -87,7 +98,6 @@ window.onload = () => {
                 continue;
             }
 
-            // END_IF
             if (line === "END_IF") 
             {
                 ifStack.pop();
@@ -95,26 +105,91 @@ window.onload = () => {
                 continue;
             }
 
-            //CASE podmienka
-            if(line.startsWith("CASE ") && line.endsWith("OF"))
+            if (line.startsWith("CASE ") && line.includes("OF")) 
             {
-                const expr = line.slice(5, line.indexOf("OF")).trim(); //vyraz medzi CASE a OF
-                caseValue = evalExpr(expr,variables); //zisti ci premenna existuje a vyhodnoti jej hodnotu
-                inCase = true; //nastavy ze sme vo vnutry CASE
-                caseMatched = false; //stav sa nasiel
+                const expr = line.slice(5, line.indexOf("OF")).trim();
+                caseValue = evalExpr(expr, variables);
+                inCase = true;
+                caseMatched = false;
+                caseFound = false;
                 continue;
             }
 
-            //CASE vetvy
             if (inCase && line.match(/^\d+\s*:/)) 
             {
-                const [valStr] = line.split(":");
+                const [valStr, ...rest] = line.split(':');
                 const val = parseInt(valStr.trim());
-                caseMatched = caseValue === val;
+
+                if (caseValue === val) 
+                {
+                    caseMatched = true;
+                    caseFound = true;
+                } 
+                else 
+                {
+                    caseMatched = false;
+                }
+
+                if (caseMatched && rest.length > 0) 
+                {
+                    const assignment = rest.join(':').trim();
+                    const match = assignment.match(/(\w+)\s*:=\s*(.+);?/);
+                    if (match) 
+                    {
+                        const [, name, expr] = match;
+                        variables[name] = evalExpr(expr, variables);
+                        if (globalVariables.hasOwnProperty(name)) 
+                        {
+                            globalVariables[name] = variables[name];
+                        }
+                    }
+                }
                 continue;
             }
 
-            //END_CASE
+            if (inCase && line.startsWith("ELSE")) 
+            {
+                if (!caseFound) 
+                {
+                    caseMatched = true;
+                    caseFound = true;
+                } 
+                else 
+                {
+                    caseMatched = false;
+                }
+
+                const rest = line.slice(4).trim();
+                if (caseMatched && rest) 
+                {
+                    const match = rest.match(/(\w+)\s*:=\s*(.+);?/);
+                    if (match) 
+                    {
+                        const [, name, expr] = match;
+                        variables[name] = evalExpr(expr, variables);
+                        if (globalVariables.hasOwnProperty(name)) 
+                        {
+                            globalVariables[name] = variables[name];
+                        }
+                    }
+                }
+                continue;
+            }
+
+            if (inCase && caseMatched && line.match(/^\w+\s*:=/)) 
+            {
+                const match = line.match(/(\w+)\s*:=\s*(.+);/);
+                if (match) 
+                {
+                    const [, name, expr] = match;
+                    variables[name] = evalExpr(expr, variables);
+                    if (globalVariables.hasOwnProperty(name)) 
+                    {
+                        globalVariables[name] = variables[name];
+                    }
+                }
+                continue;
+            }
 
             if (inCase && line === "END_CASE") 
             {
@@ -124,14 +199,6 @@ window.onload = () => {
                 continue;
             }
 
-            //ELSE vetva CASE
-            if (inCase && line === "ELSE") 
-            {
-                caseMatched = true; // vykona sa len ak nic nenaslo predtym
-                continue;
-            }
-
-            // Deklaracia premennej v ramci VAR alebo VAR_GLOBAL
             if ((inVar || inGlobalVar) && executing) 
             {
                 const match = line.match(/(\w+)\s*:\s*(\w+)\s*(?::=)?\s*([^;]*)?;/);
@@ -160,12 +227,13 @@ window.onload = () => {
                     }
 
                     variables[name] = val;
-                    if (inGlobalVar) globalVariables[name] = val;
+                    if (inGlobalVar) 
+                    {
+                        globalVariables[name] = val;
+                    }
                 }
-            }
-
-            // Priradenie hodnoty do premennej
-            else if (executing && (!inCase || caseMatched)) // vychádza z IF/ELSE logiky, kontroluje, či aktuálna CASE vetva sa má vykonať príkazy sa -> vykonávajú len ak platí oboje
+            } 
+            else if (!inCase && executing) 
             {
                 const match = line.match(/(\w+)\s*:=\s*(.+);/);
                 if (match) 
@@ -182,6 +250,7 @@ window.onload = () => {
 
         return { variables, globalVariables };
     }
+
 
     // Zobrazenie globalnych premennych v tabulke
     function renderGlobals(variables) 
