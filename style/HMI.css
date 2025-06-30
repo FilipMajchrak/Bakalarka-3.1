@@ -38,6 +38,43 @@
 }
 
 .hmi-element {
-  cursor: move;
-  z-index: 10;
+    position: absolute;
+}
+
+.hmi-element .resizer {
+    width: 10px;
+    height: 10px;
+    background: #00ff00;
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    cursor: se-resize;
+}
+
+.hmi-element.selected {
+    outline: 2px solid lime;
+}
+
+.right-panel {
+  display: flex;
+  flex-direction: row;
+  position: relative;
+}
+
+#hmi-canvas {
+  flex: 1;
+  position: relative; /* kvôli absolute deti */
+  background: #252526;
+}
+
+.properties-panel {
+  width: 200px;
+  background: #1e1e1e;
+  border-left: 1px solid #444;
+  padding: 0.5rem;
+  display: none; /* defaultne skrytá */
+}
+
+.hmi-element.selected {
+  outline: 2px solid lime;
 }
