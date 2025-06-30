@@ -28,7 +28,16 @@
     margin: 0;
 }
 
+.right-panel .inner {
+    position: relative;
+}
+
 .toolbox .inner {
   flex: 1;
   overflow-y: auto; /* len zvislý scroll ak treba */
+}
+
+.hmi-element {
+  cursor: move;
+  z-index: 10;
 }
