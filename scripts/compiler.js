@@ -7,7 +7,6 @@ function evalExpr(expr, variables)
         return evaluated.slice(1, -1);
     }
 
-    // ✅ TRUE/FALSE literály
     if (/^(TRUE|true)$/.test(evaluated)) return true;
     if (/^(FALSE|false)$/.test(evaluated)) return false;
 

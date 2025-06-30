@@ -63,7 +63,7 @@
 
 #hmi-canvas {
   flex: 1;
-  position: relative; /* kvôli absolute deti */
+  position: relative; 
   background: #252526;
 }
 
