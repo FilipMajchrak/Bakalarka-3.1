@@ -72,6 +72,8 @@ window.onload = () =>
     {
         if (loopId) return;
 
+        window.editor.setOption("readOnly", true);
+
         loopId = setInterval(() => {
             try 
             {
@@ -109,6 +111,8 @@ window.onload = () =>
     {
         clearInterval(loopId);
         loopId = null;
+
+        window.editor.setOption("readOnly", false);
 
         const runBtn = document.getElementById("run");
         runBtn.classList.remove("btn-success");
