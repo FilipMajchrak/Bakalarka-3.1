@@ -1,157 +1,179 @@
-window.onload = () => {
+function evalExpr(expr, variables) 
+{
+    let evaluated = expr.trim();
 
-    // Inicializacia CodeMirror editora
-    const editor = CodeMirror.fromTextArea(document.getElementById("editor"), 
+    if (/^".*"$/.test(evaluated)) 
     {
-        lineNumbers: true,
-        mode: "text/x-csrc",
-        theme: "default"
-    });
-
-    // Funkcia na vyhodnotenie vyrazu s premennymi
-    function evalExpr(expr, variables) {
-        let evaluated = expr;
-
-        for (const [key, value] of Object.entries(variables)) 
-        {
-            // Nahrad iba existujuce premenne
-            const regex = new RegExp(`\\b${key}\\b`, 'g');
-            evaluated = evaluated.replace(regex, value);
-        }
-
-    // Zabezpec, ze sa nepouzivaju nezname premenne
-        const unknowns = evaluated.match(/\b[a-zA-Z_]\w*\b/g)?.filter(id => !(id in variables));
-        if (unknowns && unknowns.length > 0) 
-        {
-            console.warn("Nedefinovane premenne:", unknowns);
-            return NaN; // alebo 0 alebo vyhodit chybu
-        }
-
-        try 
-        {
-            return eval(evaluated);
-        } 
-        catch 
-        {
-            return NaN;
-        }
+        return evaluated.slice(1, -1);
     }
 
-    // Funkcia na simulaciu ST kodu
-    function runST(code) 
+    // ✅ TRUE/FALSE literály
+    if (/^(TRUE|true)$/.test(evaluated)) return true;
+    if (/^(FALSE|false)$/.test(evaluated)) return false;
+
+    for (const [key, value] of Object.entries(variables)) 
     {
-        const lines = code.trim().split('\n');
-        let inVar = false;
-        let inGlobalVar = false;
-        const variables = {};
-        const globalVariables = {};
-        let executing = true;
-        let ifStack = [];
+        const regex = new RegExp(`\\b${key}\\b`, 'g');
+        evaluated = evaluated.replace(regex, value);
+    }
 
-        for (let i = 0; i < lines.length; i++) 
+    const unknowns = evaluated.match(/\b[a-zA-Z_]\w*\b/g)?.filter(id => !(id in variables));
+    if (unknowns && unknowns.length > 0) 
+    {
+        console.warn("Nedefinovane premenne:", unknowns);
+        return NaN;
+    }
+
+    try 
+    {
+        return eval(evaluated);
+    } 
+    catch 
+    {
+        return NaN;
+    }
+}
+
+window.runST = function(code, inputGlobals = {}) 
+{
+    const lines = code.trim().split('\n');
+    let inVar = false;
+    let inGlobalVar = false;
+    const variables = { ...inputGlobals };
+    const globalVariables = { ...inputGlobals };
+    let executing = true;
+    let ifStack = [];
+
+    let inCase = false;
+    let caseValue = null;
+    let caseMatched = false;
+    let caseFound = false;
+
+    for (let i = 0; i < lines.length; i++) 
+    {
+        let line = lines[i].trim();
+
+        if (line === "VAR") { inVar = true; continue; }
+        if (line === "VAR_GLOBAL") { inGlobalVar = true; continue; }
+        if (line === "END_VAR") { inVar = false; inGlobalVar = false; continue; }
+
+        if (line.startsWith("IF ") && line.endsWith("THEN")) 
         {
-            let line = lines[i].trim();
+            const condition = evalExpr(line.slice(3, -4).trim(), variables);
+            ifStack.push(condition);
+            executing = condition; continue;
+        }
 
-            // Detekcia blokov VAR a VAR_GLOBAL
-            if (line === "VAR") { inVar = true; continue; }
-            if (line === "VAR_GLOBAL") { inGlobalVar = true; continue; }
-            if (line === "END_VAR") { inVar = false; inGlobalVar = false; continue; }
+        if (line === "ELSE" && !inCase) 
+        {
+            if (ifStack.length > 0) { executing = !ifStack[ifStack.length - 1]; }
+            continue;
+        }
 
-            // IF podmienka
-            if (line.startsWith("IF ") && line.endsWith("THEN")) 
+        if (line === "END_IF") 
+        {
+            ifStack.pop();
+            executing = ifStack.length === 0 || ifStack[ifStack.length - 1];
+            continue;
+        }
+
+        if (line.startsWith("CASE ") && line.includes("OF")) 
+        {
+            const expr = line.slice(5, line.indexOf("OF")).trim();
+            caseValue = evalExpr(expr, variables);
+            inCase = true; caseMatched = false; caseFound = false; continue;
+        }
+
+        if (inCase && line.match(/^\d+\s*:/)) 
+        {
+            const [valStr, ...rest] = line.split(':');
+            const val = parseInt(valStr.trim());
+            caseMatched = caseValue === val; caseFound = caseMatched || caseFound;
+
+            if (caseMatched && rest.length > 0) 
             {
-                const condition = line.slice(3, -4).trim();
-                const result = evalExpr(condition, variables);
-                ifStack.push(result);
-                executing = result;
-                continue;
-            }
-
-            // ELSE
-            if (line === "ELSE") 
-            {
-                if (ifStack.length > 0) 
-                {
-                    executing = !ifStack[ifStack.length - 1];
-                }
-                continue;
-            }
-
-            // END_IF
-            if (line === "END_IF") 
-            {
-                ifStack.pop();
-                executing = ifStack.length === 0 || ifStack[ifStack.length - 1];
-                continue;
-            }
-
-            // Deklaracia premennej v ramci VAR alebo VAR_GLOBAL
-            if ((inVar || inGlobalVar) && executing) 
-            {
-                const match = line.match(/(\w+)\s*:\s*(\w+)\s*(?::=)?\s*([^;]*)?;/);
-                if (match) 
-                {
-                    const [, name, type, rawValue] = match;
-                    let val = 0;
-
-                    switch (type.toUpperCase()) 
-                    {
-                        case "INT":
-                        case "WORD":
-                            val = parseInt(rawValue) || 0;
-                            break;
-                        case "REAL":
-                            val = parseFloat(rawValue) || 0.0;
-                            break;
-                        case "BOOL":
-                            val = rawValue?.toUpperCase() === "TRUE";
-                            break;
-                        default:
-                            val = 0;
-                    }
-
-                    variables[name] = val;
-                    if (inGlobalVar) globalVariables[name] = val;
-                }
-            }
-
-            // Priradenie hodnoty do premennej
-            else if (executing) 
-            {
-                const match = line.match(/(\w+)\s*:=\s*(.+);/);
+                const assignment = rest.join(':').trim();
+                const match = assignment.match(/(\w+)\s*:=\s*(.+);?/);
                 if (match) 
                 {
                     const [, name, expr] = match;
                     variables[name] = evalExpr(expr, variables);
-                    if (globalVariables.hasOwnProperty(name)) 
-                    {
-                        globalVariables[name] = variables[name];
-                    }
+                    if (globalVariables.hasOwnProperty(name)) { globalVariables[name] = variables[name]; }
                 }
             }
+            continue;
         }
 
-        return { variables, globalVariables };
-    }
-
-    // Zobrazenie globalnych premennych v tabulke
-    function renderGlobals(variables) 
-    {
-        const tableBody = document.querySelector("#globals-table tbody");
-        tableBody.innerHTML = "";
-        for (const [name, value] of Object.entries(variables)) 
+        if (inCase && line.startsWith("ELSE")) 
         {
-            const row = document.createElement("tr");
-            row.innerHTML = `<td>${name}</td><td>${value}</td>`;
-            tableBody.appendChild(row);
+            if (!caseFound) { caseMatched = true; caseFound = true; }
+            else { caseMatched = false; }
+            const rest = line.slice(4).trim();
+            if (caseMatched && rest) 
+            {
+                const match = rest.match(/(\w+)\s*:=\s*(.+);?/);
+                if (match) 
+                {
+                    const [, name, expr] = match;
+                    variables[name] = evalExpr(expr, variables);
+                    if (globalVariables.hasOwnProperty(name)) { globalVariables[name] = variables[name]; }
+                }
+            }
+            continue;
+        }
+
+        if (inCase && caseMatched && line.match(/^\w+\s*:=/)) 
+        {
+            const match = line.match(/(\w+)\s*:=\s*(.+);/);
+            if (match) 
+            {
+                const [, name, expr] = match;
+                variables[name] = evalExpr(expr, variables);
+                if (globalVariables.hasOwnProperty(name)) { globalVariables[name] = variables[name]; }
+            }
+            continue;
+        }
+
+        if (inCase && line === "END_CASE") 
+        {
+            inCase = false; caseValue = null; caseMatched = false; continue;
+        }
+
+        if ((inVar || inGlobalVar) && executing) 
+        {
+            const match = line.match(/(\w+)\s*:\s*(\w+)\s*(?::=)?\s*([^;]*)?;/);
+            if (match) 
+            {
+                const [, name, type, rawValue] = match;
+                let val = 0;
+
+                switch (type.toUpperCase()) 
+                {
+                    case "INT": case "WORD": val = parseInt(rawValue) || 0; break;
+                    case "REAL": val = parseFloat(rawValue) || 0.0; break;
+                    case "BOOL": val = rawValue?.toUpperCase() === "TRUE"; break;
+                    case "STRING": val = rawValue ? rawValue.replace(/^"|"$/g, '') : ""; break;
+                    default: val = 0;
+                }
+
+                if (!(inGlobalVar && inputGlobals.hasOwnProperty(name))) 
+                {
+                    variables[name] = val;
+                    if (inGlobalVar) { globalVariables[name] = val; }
+                }
+            }
+        } 
+        else if (!inCase && executing) 
+        {
+            const match = line.match(/(\w+)\s*:=\s*(.+);/);
+            if (match) 
+            {
+                const [, name, expr] = match;
+                variables[name] = evalExpr(expr, variables);
+                if (globalVariables.hasOwnProperty(name)) { globalVariables[name] = variables[name]; }
+            }
         }
     }
 
-    // Spustenie simulacie po kliknuti na tlacidlo
-    document.getElementById("run").addEventListener("click", () => {
-        const code = editor.getValue();
-        const result = runST(code);
-        document.getElementById("output").innerHTML = "<pre>" + JSON.stringify(result.variables, null, 2) + "</pre>";
-        renderGlobals(result.globalVariables);
-    });
+    return { variables, globalVariables };
 };
