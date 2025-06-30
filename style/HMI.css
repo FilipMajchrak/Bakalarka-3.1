@@ -59,12 +59,14 @@
   display: flex;
   flex-direction: row;
   position: relative;
+  padding: 0.5rem;
 }
 
 #hmi-canvas {
   flex: 1;
-  position: relative; 
+  position: relative;
   background: #252526;
+  padding: 0.5rem;
 }
 
 .properties-panel {
@@ -73,6 +75,22 @@
   border-left: 1px solid #444;
   padding: 0.5rem;
   display: none; /* defaultne skrytá */
+}
+
+.properties-panel .inner {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.5rem;
+}
+
+.properties-panel label {
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+.properties-panel input {
+  width: 100%;
 }
 
 .hmi-element.selected {
