@@ -87,12 +87,14 @@ window.onload = () =>
     {
         if (loopId) return;
 
+        //zamknutie editoru
+        window.editor.setOption("readOnly", true);
+
         loopId = setInterval(() => 
         {
             const code = window.editor.getValue();
             const result = runST(code, globalInput);
 
-            // ✅ Prepíš celý stav
             globalInput = { ...result.globalVariables };
 
             renderGlobals(globalInput);
@@ -110,6 +112,9 @@ window.onload = () =>
     {
         clearInterval(loopId);
         loopId = null;
+
+        //odomknutie editoru
+        window.editor.setOption("readOnly", false);
 
         const runBtn = document.getElementById("run");
         runBtn.classList.remove("btn-success");
