@@ -166,7 +166,5 @@ window.runST = function(code, inputGlobals = {}) {
         }
     }
 
-    window.globalInput = globalVariables;
-
-    return { variables, globalVariables };
+    return {variables, globalVariables };
 };
