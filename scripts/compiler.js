@@ -1,4 +1,5 @@
-window.onload = () => {
+window.onload = () => 
+{
 
     // Inicializacia CodeMirror editora
     const editor = CodeMirror.fromTextArea(document.getElementById("editor"), 
@@ -8,29 +9,29 @@ window.onload = () => {
         theme: "default"
     });
 
-    // Funkcia na vyhodnotenie vyrazu s premennymi
-    function evalExpr(expr, variables) {
+    let globalInput = {};
+    let loopId = null;
+
+    function evalExpr(expr, variables) 
+    {
         let evaluated = expr;
 
-        // Ak ide o string v úvodzovkách, vráť ho ako text (bez eval)
         if (/^".*"$/.test(evaluated.trim())) 
         {
-            return evaluated.trim().slice(1, -1); // odstráni úvodzovky
+            return evaluated.trim().slice(1, -1);
         }
 
         for (const [key, value] of Object.entries(variables)) 
         {
-            // Nahrad iba existujuce premenne
             const regex = new RegExp(`\\b${key}\\b`, 'g');
             evaluated = evaluated.replace(regex, value);
         }
 
-        // Zabezpec, ze sa nepouzivaju nezname premenne
         const unknowns = evaluated.match(/\b[a-zA-Z_]\w*\b/g)?.filter(id => !(id in variables));
         if (unknowns && unknowns.length > 0) 
         {
             console.warn("Nedefinovane premenne:", unknowns);
-            return NaN; // alebo 0 alebo vyhodit chybu
+            return NaN;
         }
 
         try 
@@ -43,14 +44,13 @@ window.onload = () => {
         }
     }
 
-    // Funkcia na simulaciu ST kodu
-    function runST(code) 
+    function runST(code, inputGlobals = {}) 
     {
         const lines = code.trim().split('\n');
         let inVar = false;
         let inGlobalVar = false;
-        const variables = {};
-        const globalVariables = {};
+        const variables = { ...inputGlobals };
+        const globalVariables = { ...inputGlobals };
         let executing = true;
         let ifStack = [];
 
@@ -65,19 +65,15 @@ window.onload = () => {
 
             if (line === "VAR") 
             {
-                inVar = true;
-                continue;
+                inVar = true; continue;
             }
             if (line === "VAR_GLOBAL") 
             {
-                inGlobalVar = true;
-                continue;
+                inGlobalVar = true; continue;
             }
             if (line === "END_VAR") 
             {
-                inVar = false;
-                inGlobalVar = false;
-                continue;
+                inVar = false; inGlobalVar = false; continue;
             }
 
             if (line.startsWith("IF ") && line.endsWith("THEN")) 
@@ -85,8 +81,7 @@ window.onload = () => {
                 const condition = line.slice(3, -4).trim();
                 const result = evalExpr(condition, variables);
                 ifStack.push(result);
-                executing = result;
-                continue;
+                executing = result; continue;
             }
 
             if (line === "ELSE" && !inCase) 
@@ -111,8 +106,7 @@ window.onload = () => {
                 caseValue = evalExpr(expr, variables);
                 inCase = true;
                 caseMatched = false;
-                caseFound = false;
-                continue;
+                caseFound = false; continue;
             }
 
             if (inCase && line.match(/^\d+\s*:/)) 
@@ -122,8 +116,7 @@ window.onload = () => {
 
                 if (caseValue === val) 
                 {
-                    caseMatched = true;
-                    caseFound = true;
+                    caseMatched = true; caseFound = true;
                 } 
                 else 
                 {
@@ -151,8 +144,7 @@ window.onload = () => {
             {
                 if (!caseFound) 
                 {
-                    caseMatched = true;
-                    caseFound = true;
+                    caseMatched = true; caseFound = true;
                 } 
                 else 
                 {
@@ -193,10 +185,7 @@ window.onload = () => {
 
             if (inCase && line === "END_CASE") 
             {
-                inCase = false;
-                caseValue = null;
-                caseMatched = false;
-                continue;
+                inCase = false; caseValue = null; caseMatched = false; continue;
             }
 
             if ((inVar || inGlobalVar) && executing) 
@@ -211,28 +200,24 @@ window.onload = () => {
                     {
                         case "INT":
                         case "WORD":
-                            val = parseInt(rawValue) || 0;
-                            break;
+                            val = parseInt(rawValue) || 0; break;
                         case "REAL":
-                            val = parseFloat(rawValue) || 0.0;
-                            break;
+                            val = parseFloat(rawValue) || 0.0; break;
                         case "BOOL":
-                            val = rawValue?.toUpperCase() === "TRUE";
-                            break;
+                            val = rawValue?.toUpperCase() === "TRUE"; break;
                         case "STRING":
-                            val = rawValue ? rawValue.replace(/^"|"$/g, '') : "";
-                            break;
+                            val = rawValue ? rawValue.replace(/^"|"$/g, '') : ""; break;
                         default:
                             val = 0;
                     }
 
-                    variables[name] = val;
-                    if (inGlobalVar) 
+                    if (!(inGlobalVar && inputGlobals.hasOwnProperty(name))) 
                     {
-                        globalVariables[name] = val;
+                        variables[name] = val;
+                        if (inGlobalVar) globalVariables[name] = val;
                     }
                 }
-            } 
+            }
             else if (!inCase && executing) 
             {
                 const match = line.match(/(\w+)\s*:=\s*(.+);/);
@@ -251,25 +236,75 @@ window.onload = () => {
         return { variables, globalVariables };
     }
 
-
-    // Zobrazenie globalnych premennych v tabulke
     function renderGlobals(variables) 
     {
         const tableBody = document.querySelector("#globals-table tbody");
-        tableBody.innerHTML = "";
+
         for (const [name, value] of Object.entries(variables)) 
         {
-            const row = document.createElement("tr");
-            row.innerHTML = `<td>${name}</td><td>${value}</td>`;
-            tableBody.appendChild(row);
+            let row = tableBody.querySelector(`tr[data-name="${name}"]`);
+            if (!row) 
+            {
+                row = document.createElement("tr");
+                row.dataset.name = name;
+                row.innerHTML = `<td>${name}</td>
+                    <td><input type="text" data-name="${name}"></td>`;
+                const input = row.querySelector("input");
+                input.addEventListener("input", e => 
+                {
+                    const val = e.target.value;
+                    globalInput[name] = isNaN(val) ? val : parseFloat(val);
+                });
+                tableBody.appendChild(row);
+            }
+            const input = row.querySelector("input");
+            if (document.activeElement !== input) 
+            {
+                input.value = value;
+            }
         }
     }
 
-    // Spustenie simulacie po kliknuti na tlacidlo
-    document.getElementById("run").addEventListener("click", () => {
-        const code = editor.getValue();
-        const result = runST(code);
-        document.getElementById("output").innerHTML = "<pre>" + JSON.stringify(result.variables, null, 2) + "</pre>";
-        renderGlobals(result.globalVariables);
+    document.getElementById("run").addEventListener("click", () => 
+    {
+        if (loopId) return;
+
+        loopId = setInterval(() => 
+        {
+            const code = editor.getValue();
+            const result = runST(code, globalInput);
+
+            if (Object.keys(globalInput).length === 0) 
+            {
+                globalInput = { ...result.globalVariables };
+            }
+
+            for (const [name, val] of Object.entries(result.globalVariables)) 
+            {
+                const input = document.querySelector(`input[data-name="${name}"]`);
+                if (input && document.activeElement !== input) 
+                {
+                    globalInput[name] = val;
+                }
+            }
+
+            renderGlobals(globalInput);
+
+            document.getElementById("output").innerHTML = "<pre>" + JSON.stringify(result.variables, null, 2) + "</pre>";
+        }, 500);
+
+        const runBtn = document.getElementById("run");
+        runBtn.classList.remove("btn-primary");
+        runBtn.classList.add("btn-success");
+    });
+
+    document.getElementById("stop").addEventListener("click", () => 
+    {
+        clearInterval(loopId);
+        loopId = null;
+
+        const runBtn = document.getElementById("run");
+        runBtn.classList.remove("btn-success");
+        runBtn.classList.add("btn-primary");
     });
 };
