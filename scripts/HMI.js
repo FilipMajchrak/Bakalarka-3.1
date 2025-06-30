@@ -1,10 +1,10 @@
-document.querySelectorAll('.toolbox button').forEach(btn => 
+document.querySelectorAll('.toolbox button').forEach(btn =>
 {
-    btn.addEventListener('click', () => 
+    btn.addEventListener('click', () =>
     {
         const type = btn.dataset.type;
 
-        if (type === 'button') 
+        if (type === 'button')
         {
             const newBtn = document.createElement('button');
             newBtn.textContent = 'Nové tlačidlo';
@@ -16,9 +16,17 @@ document.querySelectorAll('.toolbox button').forEach(btn =>
             makeDraggable(newBtn);
             addResizer(newBtn);
 
-            newBtn.addEventListener('click', function(e) 
+            newBtn.addEventListener('click', function(event)
             {
-                e.stopPropagation();
+                event.stopPropagation();
+
+                // === DOPLNENÉ: Ak má priradenú BOOL premennú, prepni ju ===
+                const varName = newBtn.dataset.bool;
+                if (varName && typeof window.globalInput?.[varName] === 'boolean')
+                {
+                    window.globalInput[varName] = !window.globalInput[varName];
+                }
+
                 selectElement(newBtn);
             });
 
@@ -27,9 +35,9 @@ document.querySelectorAll('.toolbox button').forEach(btn =>
     });
 });
 
-function makeDraggable(element) 
+function makeDraggable(element)
 {
-    element.onmousedown = function(event) 
+    element.onmousedown = function(event)
     {
         if (event.target.classList.contains('resizer')) return;
 
@@ -41,18 +49,18 @@ function makeDraggable(element)
         const parent = element.parentElement;
         const parentRect = parent.getBoundingClientRect();
 
-        function moveAt(pageX, pageY) 
+        function moveAt(pageX, pageY)
         {
             let newLeft = pageX - shiftX - parentRect.left;
             let newTop = pageY - shiftY - parentRect.top;
 
             if (newLeft < 0) newLeft = 0;
             if (newTop < 0) newTop = 0;
-            if (newLeft + element.offsetWidth > parent.clientWidth) 
+            if (newLeft + element.offsetWidth > parent.clientWidth)
             {
                 newLeft = parent.clientWidth - element.offsetWidth;
             }
-            if (newTop + element.offsetHeight > parent.clientHeight) 
+            if (newTop + element.offsetHeight > parent.clientHeight)
             {
                 newTop = parent.clientHeight - element.offsetHeight;
             }
@@ -61,58 +69,58 @@ function makeDraggable(element)
             element.style.top = newTop + 'px';
         }
 
-        function onMouseMove(e) 
+        function onMouseMove(event)
         {
-            moveAt(e.pageX, e.pageY);
+            moveAt(event.pageX, event.pageY);
         }
 
         document.addEventListener('mousemove', onMouseMove);
 
-        element.onmouseup = function() 
+        element.onmouseup = function()
         {
             document.removeEventListener('mousemove', onMouseMove);
             element.onmouseup = null;
         };
     };
 
-    element.ondragstart = function() 
+    element.ondragstart = function()
     {
         return false;
     };
 }
 
-function addResizer(element) 
+function addResizer(element)
 {
     const resizer = document.createElement('div');
     resizer.className = 'resizer';
     element.appendChild(resizer);
 
-    resizer.addEventListener('mousedown', function(e) 
+    resizer.addEventListener('mousedown', function(event)
     {
-        e.stopPropagation();
-        e.preventDefault();
+        event.stopPropagation();
+        event.preventDefault();
 
         const parent = element.parentElement;
         const parentRect = parent.getBoundingClientRect();
 
-        let startX = e.clientX;
-        let startY = e.clientY;
+        let startX = event.clientX;
+        let startY = event.clientY;
         let startWidth = parseInt(document.defaultView.getComputedStyle(element).width, 10);
         let startHeight = parseInt(document.defaultView.getComputedStyle(element).height, 10);
 
-        function doDrag(e) 
+        function doDrag(event)
         {
-            let newWidth = startWidth + (e.clientX - startX);
-            let newHeight = startHeight + (e.clientY - startY);
+            let newWidth = startWidth + (event.clientX - startX);
+            let newHeight = startHeight + (event.clientY - startY);
 
             if (newWidth < 30) newWidth = 30;
             if (newHeight < 20) newHeight = 20;
 
-            if (element.offsetLeft + newWidth > parent.clientWidth) 
+            if (element.offsetLeft + newWidth > parent.clientWidth)
             {
                 newWidth = parent.clientWidth - element.offsetLeft;
             }
-            if (element.offsetTop + newHeight > parent.clientHeight) 
+            if (element.offsetTop + newHeight > parent.clientHeight)
             {
                 newHeight = parent.clientHeight - element.offsetTop;
             }
@@ -121,7 +129,7 @@ function addResizer(element)
             element.style.height = newHeight + 'px';
         }
 
-        function stopDrag() 
+        function stopDrag()
         {
             document.removeEventListener('mousemove', doDrag);
             document.removeEventListener('mouseup', stopDrag);
@@ -134,31 +142,56 @@ function addResizer(element)
 
 let selectedElement = null;
 
-function selectElement(el) 
+function selectElement(lelement)
 {
-    if (selectedElement) 
+    if (selectedElement)
     {
         selectedElement.classList.remove('selected');
     }
 
-    selectedElement = el;
+    selectedElement = lelement;
     selectedElement.classList.add('selected');
 
     document.getElementById('properties-panel').style.display = 'block';
-    document.getElementById('prop-text').value = el.innerText;
+    document.getElementById('prop-text').value = lelement.innerText;
+
+    // === DOPLNENÉ: Priprav BOOL select ===
+    const boolSelect = document.getElementById('prop-bool');
+    boolSelect.innerHTML = '';
+
+    Object.entries(window.globalInput || {}).forEach(([name, value]) =>
+    {
+        if (typeof value === 'boolean')
+        {
+            const option = document.createElement('option');
+            option.value = name;
+            option.textContent = name;
+            boolSelect.appendChild(option);
+        }
+    });
+
+    if (selectedElement.dataset.bool)
+    {
+        boolSelect.value = selectedElement.dataset.bool;
+    }
+
+    boolSelect.onchange = () =>
+    {
+        selectedElement.dataset.bool = boolSelect.value;
+    };
 }
 
-document.getElementById('prop-text').addEventListener('input', function(e) 
+document.getElementById('prop-text').addEventListener('input', function(event)
 {
-    if (selectedElement) 
+    if (selectedElement)
     {
-        selectedElement.innerText = e.target.value;
+        selectedElement.innerText = event.target.value;
     }
 });
 
-document.getElementById('hmi-canvas').addEventListener('click', () => 
+document.getElementById('hmi-canvas').addEventListener('click', () =>
 {
-    if (selectedElement) 
+    if (selectedElement)
     {
         selectedElement.classList.remove('selected');
         selectedElement = null;
