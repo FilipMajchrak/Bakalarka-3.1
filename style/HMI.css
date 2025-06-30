@@ -1,17 +1,34 @@
 .toolbox {
-  background-color: #1e1e1e; /* rovnaké */
-  border-right: 1px solid #444; /* rovnaké */
-  width: 160px;         /* užšie */
+  width: 160px;
   min-width: 120px;
-  padding: 0.5rem;      /* menší vnútrajšok */
-  overflow-y: auto;
+  background-color: #1e1e1e;
+  border-right: 1px solid #444;
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
 }
 
 .hmi-page .split-container {
-  margin: 0;
-  padding: 0;
+    margin: 0;
+    padding: 0;
 }
 
 .hmi-page .right-panel {
-  padding: 0; /* len pre HMI */
+    padding: 0.5rem; /* len pre HMI */
+}
+
+.inner {
+    height: 100%;
+    background: #252526; /* o trochu svetlejšia ako right-panel */
+    padding: 0.5rem;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    font-family: monospace;
+    border: none; /* nie hrubý border, ak ho nepotrebuješ */
+    margin: 0;
+}
+
+.toolbox .inner {
+  flex: 1;
+  overflow-y: auto; /* len zvislý scroll ak treba */
 }
