@@ -1,11 +1,15 @@
-window.evalExpr = function(expr, variables) 
+function evalExpr(expr, variables) 
 {
-    let evaluated = expr;
+    let evaluated = expr.trim();
 
-    if (/^".*"$/.test(evaluated.trim())) 
+    if (/^".*"$/.test(evaluated)) 
     {
-        return evaluated.trim().slice(1, -1);
+        return evaluated.slice(1, -1);
     }
+
+    // ✅ TRUE/FALSE literály
+    if (/^(TRUE|true)$/.test(evaluated)) return true;
+    if (/^(FALSE|false)$/.test(evaluated)) return false;
 
     for (const [key, value] of Object.entries(variables)) 
     {
@@ -28,7 +32,7 @@ window.evalExpr = function(expr, variables)
     {
         return NaN;
     }
-};
+}
 
 window.runST = function(code, inputGlobals = {}) 
 {
