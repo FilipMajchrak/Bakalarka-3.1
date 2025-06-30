@@ -1,0 +1,17 @@
+.toolbox {
+  background-color: #1e1e1e; /* rovnaké */
+  border-right: 1px solid #444; /* rovnaké */
+  width: 160px;         /* užšie */
+  min-width: 120px;
+  padding: 0.5rem;      /* menší vnútrajšok */
+  overflow-y: auto;
+}
+
+.hmi-page .split-container {
+  margin: 0;
+  padding: 0;
+}
+
+.hmi-page .right-panel {
+  padding: 0; /* len pre HMI */
+}
