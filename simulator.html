@@ -10,6 +10,7 @@
   <!-- Štýly -->
   <link href="style/style.css" rel="stylesheet">
   <link href="style/HMI.css" rel="stylesheet">
+  <link href="style/simulator.css" rel="stylesheet">
 
    <script type="importmap">
   {
@@ -24,23 +25,39 @@
   <script type="module" src="sim_scripts/threeScene.js"></script>
 
   <!-- Resize -->
-  <script src="scripts/resize.js" defer></script>
+  <script src="scripts/resize.js"></script>
 </head>
 <body>
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-3">
+        <a class="navbar-brand">ST Simulátor</a>
+        <div class="collapse navbar-collapse">
+        <ul class="navbar-nav ms-auto">
+            <li class="nav-item"><a class="nav-link nav-tab" href="index.html">Späť</a></li>
+            <li class="nav-item"><a class="nav-link nav-tab" href="simulator.html">Simulátor</a></li>
+        </ul>
+        </div>
+    </nav>
 
-  <!-- NAVBAR -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-3">
-    <a class="navbar-brand">ST Simulátor</a>
-    <div class="collapse navbar-collapse">
-      <ul class="navbar-nav ms-auto">
-        <li class="nav-item"><a class="nav-link nav-tab" href="index.html">Späť</a></li>
-        <li class="nav-item"><a class="nav-link nav-tab" href="simulator.html">Simulátor</a></li>
-      </ul>
+    <div class="simulator-layout">
+
+    <div class="split-container">
+
+        <!-- Ľavý panel -->
+        <div class="toolbox">
+            <div class="inner">
+                <h5 class="text-light mb-3 text-center">Nastavenia</h5>
+            </div>
+        </div>
+
+        <!-- Pravý panel -->
+        <div class="main-panel">
+        <div id="three-container"></div>
+        </div>
+
     </div>
-  </nav>
 
-  <!-- Kontajner už bez type="module" -->
-  <div id="three-container"></div>
+</div>
 
 </body>
 </html>

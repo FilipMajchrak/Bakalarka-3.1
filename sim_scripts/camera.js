@@ -17,55 +17,55 @@ export function createCamera()
 
 export function setupPointerLockControls(camera, renderer)
 {
-  const controls = new PointerLockControls(camera, renderer.domElement);
+    const controls = new PointerLockControls(camera, renderer.domElement);
 
-  document.body.addEventListener('click', () =>
-  {
-    controls.lock();
-  });
-
-  const keysPressed = {};
-
-  window.addEventListener('keydown', (event) =>
-  {
-    keysPressed[event.key.toLowerCase()] = true;
-  });
-
-  window.addEventListener('keyup', (event) =>
-  {
-    keysPressed[event.key.toLowerCase()] = false;
-  });
-
-  return function updateCameraPosition()
-  {
-    const moveSpeed = 0.1;
-
-    // Vektor smeru pohľadu
-    const direction = new THREE.Vector3();
-
-    camera.getWorldDirection(direction);
-
-    // Pohyb dopredu/dozadu vrátane osy Y
-    if (keysPressed['w'])
+    document.body.addEventListener('dblclick', () =>
     {
-      camera.position.add(direction.clone().multiplyScalar(moveSpeed));
-    }
-    if (keysPressed['s'])
-    {
-      camera.position.add(direction.clone().multiplyScalar(-moveSpeed));
-    }
+        controls.lock();
+    });
 
-    // Vektor vpravo
-    const right = new THREE.Vector3();
-    right.crossVectors(camera.up, direction).normalize();
+    const keysPressed = {};
 
-    if (keysPressed['d'])
+    window.addEventListener('keydown', (event) =>
     {
-      camera.position.add(right.clone().multiplyScalar(-moveSpeed));
-    }
-    if (keysPressed['a'])
+        keysPressed[event.key.toLowerCase()] = true;
+    });
+
+    window.addEventListener('keyup', (event) =>
     {
-      camera.position.add(right.clone().multiplyScalar(moveSpeed));
-    }
-  };
+        keysPressed[event.key.toLowerCase()] = false;
+    });
+
+    return function updateCameraPosition()
+    {
+        const moveSpeed = 0.1;
+
+        // Vektor smeru pohľadu
+        const direction = new THREE.Vector3();
+
+        camera.getWorldDirection(direction);
+
+        // Pohyb dopredu/dozadu vrátane osy Y
+        if (keysPressed['w'])
+        {
+        camera.position.add(direction.clone().multiplyScalar(moveSpeed));
+        }
+        if (keysPressed['s'])
+        {
+        camera.position.add(direction.clone().multiplyScalar(-moveSpeed));
+        }
+
+        // Vektor vpravo
+        const right = new THREE.Vector3();
+        right.crossVectors(camera.up, direction).normalize();
+
+        if (keysPressed['d'])
+        {
+        camera.position.add(right.clone().multiplyScalar(-moveSpeed));
+        }
+        if (keysPressed['a'])
+        {
+        camera.position.add(right.clone().multiplyScalar(moveSpeed));
+        }
+    };
 }
