@@ -19,7 +19,7 @@ export function setupPointerLockControls(camera, renderer)
 {
     const controls = new PointerLockControls(camera, renderer.domElement);
 
-    renderer.domElement.addEventListener('dblclick', () =>
+    renderer.domElement.addEventListener('click', () =>
     {
         controls.lock();
     });
