@@ -1,19 +1,23 @@
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js';
 
 const allHitboxes = [];
+const defaultToggle = false;
 
 export function showHitbox(object3D, scene, physicsBody)
 {
   const box = new THREE.Box3();
   const yellowHelper = new THREE.Box3Helper(box, 0xffff00);
+  yellowHelper.visible = defaultToggle;
   scene.add(yellowHelper);
 
   let greenHelper = null;
   let greenBox = null;
+
   if (physicsBody && physicsBody.mesh)
   {
     greenBox = new THREE.Box3();
     greenHelper = new THREE.Box3Helper(greenBox, 0x00ff00);
+    greenHelper.visible = defaultToggle; //default stav
     scene.add(greenHelper);
   }
 
