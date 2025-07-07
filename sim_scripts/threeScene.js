@@ -37,6 +37,18 @@ scene.add(gridHelper);
 // Fyzikálny svet
 const physicsWorld = new PhysicsWorld();
 
+// Počítadlo načítania
+let objectsToLoad = 3; //počet objektov
+let objectsLoaded = 0;
+
+function objectLoaded() 
+{
+  objectsLoaded++;
+  if (objectsLoaded === objectsToLoad) {
+    animate();
+  }
+}
+
 // Objekty zo samostatného modulu
 createStaticCube(scene, physicsWorld);
 createFallingCube(scene, physicsWorld);

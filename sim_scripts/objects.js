@@ -48,7 +48,7 @@ export function createFallingCube(scene, physicsWorld)
 }
 
 // Načítaj OBJ model a vlož ho do scény
-export function loadOBJModel(scene, physicsWorld) 
+export function loadOBJModel(scene, physicsWorld, onLoaded) 
 {
   const loader = new OBJLoader();
   loader.load('obj/conv1.obj', (obj) => 
@@ -59,8 +59,7 @@ export function loadOBJModel(scene, physicsWorld)
 
     obj.traverse((child) => 
     {
-      if (child.isMesh) 
-      {
+      if (child.isMesh) {
         child.position.sub(center);
       }
     });
@@ -76,5 +75,8 @@ export function loadOBJModel(scene, physicsWorld)
     physicsWorld.addBody(physBody);
 
     showHitbox(obj, scene, physBody);
+
+    // Zavolaj callback keď je OBJ načítaný
+    onLoaded();
   });
 }
