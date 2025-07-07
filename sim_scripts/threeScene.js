@@ -46,7 +46,7 @@ const cubeStatic = new THREE.Mesh(
   new THREE.BoxGeometry(10, 1, 10),
   new THREE.MeshStandardMaterial({ color: 0x555555 })
 );
-cubeStatic.position.set(0, 0, 0);
+cubeStatic.position.set(0, 8, 18);
 scene.add(cubeStatic);
 
 const staticBody = new PhysicsBody(cubeStatic);
@@ -75,35 +75,29 @@ function degToRad(degrees)
 
 // Načítaj OBJ model a vlož ho do scény
 const loader = new OBJLoader();
-loader.load('obj/test.obj', (obj) => 
-{
-  // Predpokladáme, že obj je Group - zober prvý Mesh
-  let mesh;
-  obj.traverse((child) => 
-  {
-    if (child.isMesh)
-    {
-      mesh = child;
+loader.load('obj/conv1.obj', (obj) => {
+  // Vypočítaj bbox celej Group
+  const box = new THREE.Box3().setFromObject(obj);
+  const center = new THREE.Vector3();
+  box.getCenter(center);
+
+  // Posuň VŠETKY deti
+  obj.traverse((child) => {
+    if (child.isMesh) {
+      child.position.sub(center);
     }
   });
 
-  if (!mesh)
-  {
-    console.error('Načítaný OBJ nemá mesh');
-    return;
-  }
+  // Teraz je Group pivot v strede, deti posunuté
+  scene.add(obj);
 
-  // Pridaj mesh do scény
-  scene.add(mesh);
-  mesh.position.set(0, 0, 0);
-  mesh.scale.set(0.1,0.1, 0.1); // alebo uprav podľa potreby
-  mesh.rotation.x = degToRad(-90);
+  obj.position.set(0, 5, 0); // nová pozícia
+  obj.scale.set(0.01, 0.01, 0.01);
+  obj.rotation.z = degToRad(180);
 
-  // Vytvor PhysicsBody a označ ho ako statický (podložka, prekážka)
-  const physBody = new PhysicsBody(mesh);
+  const physBody = new PhysicsBody(obj);
   physBody.isStatic = true;
   physicsWorld.addBody(physBody);
-  // Teraz mesh reaguje v simulácii ako pevné teleso
 
   const hb1 = showHitbox(obj, scene, physBody);
 });
