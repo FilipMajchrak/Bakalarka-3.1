@@ -4,6 +4,12 @@ import { OBJLoader } from 'https://cdn.jsdelivr.net/npm/three@0.161.0/examples/j
 
 // Import kamery a voľného pohybu s PointerLockControls
 import { createCamera, setupPointerLockControls } from './camera.js';
+// Import fyziky
+import { PhysicsBody, PhysicsWorld } from './physics.js';
+//Debug
+import { showHitbox} from './debugtool.js';
+
+const clock = new THREE.Clock();
 
 // Vytvor scénu a nastav farbu pozadia
 const scene = new THREE.Scene();
@@ -33,34 +39,72 @@ scene.add(directionalLight);
 const gridHelper = new THREE.GridHelper(100, 100);
 scene.add(gridHelper);
 
-// Načítaj OBJ model a vlož ho do scény
-const loader = new OBJLoader();
-loader.load(
-  'obj/test.obj',
-  function (obj)
-  {
-    obj.position.set(0, 0, 0);
-    obj.scale.set(0.1, 0.1, 0.1);
-    obj.rotation.x = degToRad(-90);
+//Pridaj kocku !!!! testovne
+const physicsWorld = new PhysicsWorld();
 
-    scene.add(obj);
-    console.log('OBJ loaded:', obj);
-  },
-  function (xhr)
-  {
-    console.log((xhr.loaded / xhr.total * 100) + '% načítané');
-  },
-  function (error)
-  {
-    console.error('Chyba načítania:', error);
-  }
+const cubeStatic = new THREE.Mesh(
+  new THREE.BoxGeometry(10, 1, 10),
+  new THREE.MeshStandardMaterial({ color: 0x555555 })
 );
+cubeStatic.position.set(0, 0, 0);
+scene.add(cubeStatic);
+
+const staticBody = new PhysicsBody(cubeStatic);
+staticBody.isStatic = true;
+physicsWorld.addBody(staticBody);
+
+const cubeFalling = new THREE.Mesh(
+  new THREE.BoxGeometry(1, 1, 1),
+  new THREE.MeshStandardMaterial({ color: 0xff0000 })
+);
+cubeFalling.position.set(0, 20, 0);
+scene.add(cubeFalling);
+showHitbox(cubeFalling, scene);
+
+const fallingBody = new PhysicsBody(cubeFalling);
+physicsWorld.addBody(fallingBody);
 
 // Pomocná funkcia na prevod stupňov na radiány
 function degToRad(degrees)
 {
   return degrees * (Math.PI / 180);
 }
+
+
+// Načítaj OBJ model a vlož ho do scény
+const loader = new OBJLoader();
+loader.load('obj/test.obj', (obj) => 
+{
+  // Predpokladáme, že obj je Group - zober prvý Mesh
+  let mesh;
+  obj.traverse((child) => 
+  {
+    if (child.isMesh)
+    {
+      mesh = child;
+    }
+  });
+
+  if (!mesh)
+  {
+    console.error('Načítaný OBJ nemá mesh');
+    return;
+  }
+
+  // Pridaj mesh do scény
+  scene.add(mesh);
+  mesh.position.set(0, 0, 0);
+  mesh.scale.set(0.1,0.1, 0.1); // alebo uprav podľa potreby
+  mesh.rotation.x = degToRad(-90);
+
+  // Vytvor PhysicsBody a označ ho ako statický (podložka, prekážka)
+  const physBody = new PhysicsBody(mesh);
+  physBody.isStatic = true;
+  physicsWorld.addBody(physBody);
+  // Teraz mesh reaguje v simulácii ako pevné teleso
+
+  showHitbox(obj, scene);
+});
 
 // Prispôsobenie rozmerov pri zmene veľkosti okna
 window.addEventListener('resize', () =>
@@ -76,6 +120,9 @@ function animate()
   requestAnimationFrame(animate);
 
   updateCameraPosition();
+
+  const deltaTime = clock.getDelta(); // čas medzi snímkami v sekundách
+  physicsWorld.update(deltaTime);
 
   renderer.render(scene, camera);
 }
