@@ -59,17 +59,19 @@ const cubeFalling = new THREE.Mesh(
 );
 cubeFalling.position.set(0, 20, 0);
 scene.add(cubeFalling);
-showHitbox(cubeFalling, scene);
 
 const fallingBody = new PhysicsBody(cubeFalling);
 physicsWorld.addBody(fallingBody);
+
+//hitbox
+const hb2 = showHitbox(cubeStatic, scene, staticBody);
+const hb3= showHitbox(cubeFalling, scene, fallingBody);
 
 // Pomocná funkcia na prevod stupňov na radiány
 function degToRad(degrees)
 {
   return degrees * (Math.PI / 180);
 }
-
 
 // Načítaj OBJ model a vlož ho do scény
 const loader = new OBJLoader();
@@ -103,7 +105,7 @@ loader.load('obj/test.obj', (obj) =>
   physicsWorld.addBody(physBody);
   // Teraz mesh reaguje v simulácii ako pevné teleso
 
-  showHitbox(obj, scene);
+  const hb1 = showHitbox(obj, scene, physBody);
 });
 
 // Prispôsobenie rozmerov pri zmene veľkosti okna
