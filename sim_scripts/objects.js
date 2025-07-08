@@ -2,12 +2,59 @@
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js';
 import { OBJLoader } from 'https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/loaders/OBJLoader.js';
 import { PhysicsBody } from './physics.js';
-import { showHitbox } from './debugtool.js';
+import { showHitbox, showDetectionBoxHelper} from './debugtool.js';
 
-// Pomocná funkcia na prevod stupňov na radiány
-function degToRad(degrees) 
+// Načítaj OBJ model a vlož ho do scény
+/**
+* Načíta OBJ model do scény.
+*
+* @param {object} options - nastavenia:
+*   scene, physicsWorld, url, position, scale, rotation, onLoaded
+*/
+export function loadOBJModel({
+  scene,
+  physicsWorld,
+  url,
+  position = [0, 0, 0],
+  scale = [1, 1, 1],
+  rotation = [0, 0, 0],
+  onLoaded = () => {}
+}) 
 {
-  return degrees * (Math.PI / 180);
+  const loader = new OBJLoader();
+
+  loader.load(url, (obj) => 
+  {
+    // Zarovnaj pivot do stredu
+    const box = new THREE.Box3().setFromObject(obj);
+    const center = new THREE.Vector3();
+    box.getCenter(center);
+
+    obj.traverse((child) => 
+    {
+      if (child.isMesh) {
+        child.position.sub(center);
+      }
+    });
+
+    scene.add(obj);
+
+    obj.position.set(...position);
+    obj.scale.set(...scale);
+    obj.rotation.set(
+      degToRad(rotation[0]),
+      degToRad(rotation[1]),
+      degToRad(rotation[2])
+    );
+
+    const physBody = new PhysicsBody(obj);
+    physBody.isStatic = true;
+    physicsWorld.addBody(physBody);
+
+    showHitbox(obj, scene, physBody);
+
+    onLoaded(obj);
+  });
 }
 
 // Vytvor statickú kocku (platformu)
@@ -26,7 +73,7 @@ export function createStaticCube(scene, physicsWorld)
 
   showHitbox(cubeStatic, scene, staticBody);
 
-  return cubeStatic;
+  return{mesh:cubeStatic, body:staticBody};
 }
 
 // Vytvor kocku, ktorá padá
@@ -44,39 +91,11 @@ export function createFallingCube(scene, physicsWorld)
 
   showHitbox(cubeFalling, scene, fallingBody);
 
-  return cubeFalling;
+  return {mesh: cubeFalling,body: fallingBody,};
 }
 
-// Načítaj OBJ model a vlož ho do scény
-export function loadOBJModel(scene, physicsWorld, onLoaded) 
+// Pomocná funkcia na prevod stupňov na radiány
+export function degToRad(degrees) 
 {
-  const loader = new OBJLoader();
-  loader.load('obj/conv1.obj', (obj) => 
-  {
-    const box = new THREE.Box3().setFromObject(obj);
-    const center = new THREE.Vector3();
-    box.getCenter(center);
-
-    obj.traverse((child) => 
-    {
-      if (child.isMesh) {
-        child.position.sub(center);
-      }
-    });
-
-    scene.add(obj);
-
-    obj.position.set(0, 5, 0);
-    obj.scale.set(0.01, 0.01, 0.01);
-    obj.rotation.z = degToRad(180);
-
-    const physBody = new PhysicsBody(obj);
-    physBody.isStatic = true;
-    physicsWorld.addBody(physBody);
-
-    showHitbox(obj, scene, physBody);
-
-    // Zavolaj callback keď je OBJ načítaný
-    onLoaded();
-  });
+  return degrees * (Math.PI / 180);
 }

@@ -1,7 +1,16 @@
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js';
 
 const allHitboxes = [];
-const defaultToggle = false;
+const defaultToggle = true;
+
+/**
+* Vytvor helper pre detection box.
+* Detection box je priehľadný Mesh, ale toto zvýrazní jeho AABB.
+*
+* @param {object} detection - detection helper { mesh, box3, update(), contains() }
+* @param {THREE.Scene} scene - scéna, do ktorej sa vloží helper
+* @returns {object} helper { boxHelper, setVisible(), dispose() }
+*/
 
 export function showHitbox(object3D, scene, physicsBody)
 {
@@ -17,7 +26,7 @@ export function showHitbox(object3D, scene, physicsBody)
   {
     greenBox = new THREE.Box3();
     greenHelper = new THREE.Box3Helper(greenBox, 0x00ff00);
-    greenHelper.visible = defaultToggle; //default stav
+    greenHelper.visible = defaultToggle;
     scene.add(greenHelper);
   }
 
@@ -33,19 +42,10 @@ export function showHitbox(object3D, scene, physicsBody)
     }
   }
 
-  update();
-
-  function animate()
-  {
-    update();
-    requestAnimationFrame(animate);
-  }
-
-  animate();
-
   const helpers = {
     yellowHelper,
     greenHelper,
+    update,   // Vráť update funkciu!
     setVisible(visible)
     {
       yellowHelper.visible = visible;
@@ -65,7 +65,6 @@ export function showHitbox(object3D, scene, physicsBody)
         greenHelper.material.dispose();
       }
 
-      // Odstráni sa z globálneho zoznamu
       const index = allHitboxes.indexOf(helpers);
       if (index !== -1)
         allHitboxes.splice(index, 1);
@@ -76,6 +75,32 @@ export function showHitbox(object3D, scene, physicsBody)
 
   return helpers;
 }
+
+export function showDetectionBoxHelper(detection, scene)
+{
+  const helper = new THREE.Box3Helper(detection.box3, 0xff00ff);
+  helper.visible = defaultToggle;
+  scene.add(helper);
+
+  const update = () => {
+    detection.update();
+    helper.box.copy(detection.box3);
+  };
+
+  const helperObj = {
+    update,
+    setVisible(state) {
+      helper.visible = state;
+    },
+    dispose() {
+      scene.remove(helper);
+    }
+  };
+
+  allHitboxes.push(helperObj);
+  return helperObj;
+}
+
 
 // Funkcia na prepínanie viditeľnosti hitboxov
 window.toggleHitbox = function(state, index = null)
