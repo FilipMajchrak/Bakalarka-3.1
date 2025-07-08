@@ -79,7 +79,6 @@ export class PhysicsWorld
             b.velocity.y = 0;
             b.mesh.position.y = boxA.max.y + (boxB.max.y - boxB.min.y) / 2;
           }
-          // Tu môžeš pridať ďalšie spracovanie kolízie (odrazy, trenie, ...)
         }
       }
     }
