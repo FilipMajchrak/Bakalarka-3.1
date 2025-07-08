@@ -30,7 +30,7 @@ export class Scene1
     const gridHelper = new THREE.GridHelper(100, 100);
     this.scene.add(gridHelper);
 
-    // ➜ Tvoje objekty
+    // obj
     const staticCubeOBJ = createStaticCube(this.scene, this.physicsWorld);
     const fallingCubeOBJ = createFallingCube(this.scene, this.physicsWorld);
 
@@ -44,7 +44,7 @@ export class Scene1
       onLoaded: (obj) => {
         //console.log('Model hotový:', obj);
 
-        const conv1Hitbox = showHitbox(obj, this.scene, obj);
+        const conv1Hitbox = showHitbox(obj, this.scene, null);
         this.updatables.push(conv1Hitbox);
 
         this.conv1 = obj;
@@ -53,8 +53,8 @@ export class Scene1
 
 
     // Pridaj hitboxy do updatables
-    const staticHitbox = showHitbox(staticCubeOBJ.mesh, this.scene, staticCubeOBJ.body);
-    const fallingHitbox = showHitbox(fallingCubeOBJ.mesh, this.scene, fallingCubeOBJ.body);
+    const staticHitbox = showHitbox(staticCubeOBJ.mesh, this.scene, null);
+    const fallingHitbox = showHitbox(fallingCubeOBJ.mesh, this.scene, null);
     this.updatables.push(staticHitbox);
     this.updatables.push(fallingHitbox);
 
