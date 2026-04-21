@@ -1,0 +1,119 @@
+<Configuration>
+	<Port>502</Port>
+	<IpAddr/>
+	<Mapping>
+		<InputCoils>
+			<!-- process image of the physical inputs (bit access) -->
+			<MappingInfo>
+				<AdsPort>851</AdsPort>
+				<!-- Modbus Start Address 0 = 0x0000 -->
+				<StartAddress>0</StartAddress>
+				<!-- Modbus End Address 32767 = 0x7FFF -->
+				<EndAddress>32767</EndAddress>
+				<!-- IndexGroup 61473 = 0xF021 PLC process diagram of the physical inputs (%IX field). -->
+				<IndexGroup>61473</IndexGroup>
+				<!-- IndexOffset 1024000 = 0xFA000 -> The index offset contains the bit address which is calculated from base offset (0xFA000) + byte number +8 + bit number -->
+				<IndexOffset>0</IndexOffset>
+			</MappingInfo>
+			<!-- digitial inputs mapping by variable name -->
+			<MappingInfo>
+				<AdsPort>851</AdsPort>
+				<!-- Modbus Address 32768 = 0x8000 -->
+				<StartAddress>32768</StartAddress>
+				<!-- Modbus Address 33023 = 0x80FF -->
+				<EndAddress>33023</EndAddress>
+				<VarName>GVL.mb_Input_Coils</VarName>
+			</MappingInfo>
+		</InputCoils>
+		<OutputCoils>
+			<!--process image of the physical outputs (bit access) -->
+			<MappingInfo>
+				<AdsPort>851</AdsPort>
+				<!-- Modbus Address 0 = 0x0000 -->
+				<StartAddress>0</StartAddress>
+				<!-- Modbus Address 0 = 0x7FFF -->
+				<EndAddress>32767</EndAddress>
+				<!-- IndexGroup 61473 = 0xF031 -> PLC process diagram of the physical outputs(%QX field) -->
+				<IndexGroup>61489</IndexGroup>
+				<!-- IndexOffset 2048000 = 0x1F4000 -> The index offset contains the bit address which is calculated from the base offset (0x1F4000) + byte number *8 + bit number. -->
+				<IndexOffset>2048000</IndexOffset>
+			</MappingInfo>
+			<!-- digitial outputs mapping by variable name -->
+			<MappingInfo>
+				<AdsPort>851</AdsPort>
+				<!-- Modbus Address 32768 = 0x8000 -->
+				<StartAddress>32768</StartAddress>
+				<!-- Modbus Address 33023 = 0x80FF -->
+				<EndAddress>33023</EndAddress>
+				<VarName>GVL.mb_Output_Coils</VarName>
+			</MappingInfo>
+		</OutputCoils>
+		<InputRegisters>
+			<!-- process image of the physical inputs -->
+			<MappingInfo>
+				<AdsPort>851</AdsPort>
+				<!-- Modbus Address 0 = 0x0000 -->
+				<StartAddress>0</StartAddress>
+				<!-- Modbus Address 0 = 0x7FFF -->
+				<EndAddress>32767</EndAddress>
+				<!-- IndexGroup 61472 = 0xF020 -> process image of the physical inputs -->
+				<IndexGroup>61472</IndexGroup>
+				<IndexOffset>0</IndexOffset>
+			</MappingInfo>
+			<!-- input register mapping by variable name -->
+			<MappingInfo>
+				<AdsPort>851</AdsPort>
+				<!-- Modbus Address 32768 = 0x8000 -->
+				<StartAddress>32768</StartAddress>
+				<!-- Modbus Address 33023 = 0x80FF -->
+				<EndAddress>33023</EndAddress>
+				<VarName>GVL.mb_Input_Registers</VarName>
+			</MappingInfo>
+		</InputRegisters>
+		<OutputRegisters>
+			<!-- process image of the physical outputs -->
+			<MappingInfo>
+				<AdsPort>851</AdsPort>
+				<!-- Modbus Address 0 = 0x0000 -->
+				<StartAddress>0</StartAddress>
+				<!-- Modbus Address 0 = 0x2FFF -->
+				<EndAddress>12287</EndAddress>
+				<!-- IndexGroup 61488 = 0xF030 - process image of the physical outputs -->
+				<IndexGroup>61488</IndexGroup>
+				<IndexOffset>0</IndexOffset>
+			</MappingInfo>
+			<!-- PLC memory area -->
+			<MappingInfo>
+				<AdsPort>851</AdsPort>
+				<!-- Modbus Address 12288 = 0x3000 -->
+				<StartAddress>12288</StartAddress>
+				<!-- Modbus Address 24575 = 0x5FFF -->
+				<EndAddress>24575</EndAddress>
+				<!-- IndexGroup 16417 = 0x4021 -> plc memory area -->
+				<IndexGroup>16416</IndexGroup>
+				<IndexOffset>0</IndexOffset>
+			</MappingInfo>
+			<!--  PLC data area -->
+			<MappingInfo>
+				<AdsPort>851</AdsPort>
+				<!-- Modbus Address 32768 = 0x6000 -->
+				<StartAddress>24576</StartAddress>
+				<!-- Modbus Address 32767 = 0x7FFF -->
+				<EndAddress>32767</EndAddress>
+				<!-- IndexGroup 16448 = 0x4040 - PLC data area -->
+				<IndexGroup>16448</IndexGroup>
+				<!-- The index offset is byte offset -->
+				<IndexOffset>0</IndexOffset>
+			</MappingInfo>
+			<!-- output register mapping by variable name -->
+			<MappingInfo>
+				<AdsPort>851</AdsPort>
+				<!-- Modbus Address 32768 = 0x8000 -->
+				<StartAddress>32768</StartAddress>
+				<!-- Modbus Address 33023 = 0x80FF -->
+				<EndAddress>33023</EndAddress>
+				<VarName>GVL.mb_Output_Registers</VarName>
+			</MappingInfo>
+		</OutputRegisters>
+	</Mapping>
+</Configuration>

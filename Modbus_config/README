@@ -1,0 +1,2 @@
+Pre správne fungovanie mapovania I/O je potrebné importovať súbor TcModbusSrv.xml do programu TcModbusSrvCfg. 
+Súbor obsahuje preddefinovanú konfiguráciu Modbus registrov použitú v projekte a zabezpečuje správne priradenie vstupov a výstupov pre komunikáciu medzi PLC a simulátorom.
