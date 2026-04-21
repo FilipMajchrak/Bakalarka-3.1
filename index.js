@@ -1,29 +1,41 @@
-#!/usr/bin/env node
-/* eslint-disable no-console */
+/*
+PREHĽAD HLAVNÝCH ČASTÍ A FUNKCIÍ
 
-/**
- * ============================================
- * ST Simulátor – Node.js backend (priama adresácia ako v CLI)
- *
- * Funkcie:
- *  - HTTP server (Express) na servírovanie HTML a JS pre simulátor
- *  - WebSocket server na komunikáciu s prehliadačom
- *  - Modbus TCP klient (jsmodbus) pre spojenie so skutočným PLC
- *
- * Architektúra:
- *   Browser (simulator.html)
- *          ↑  WebSocket
- *   Node.js (index.js)  ↔  Modbus TCP ↔  PLC (TwinCAT)
- *
- * Zásady IO:
- *  - IO.inputs  → PLC povely pre simulátor
- *  - IO.outputs → hodnoty zo simulátora (senzory, merania) pre PLC
- *
- * Základný rozdiel oproti predchádzajúcim verziám:
- *  - každá Modbus adresa sa číta a zapisuje presne tak, ako je uvedená v mape scény
- *  - nepoužívajú sa blokové čítania ani offsety
- * ============================================
- */
+Inicializácia:
+- Express server
+- WebSocket server
+- Modbus TCP klient
+- Runtime konfigurácia (.env, user_config.json)
+
+Konfiguračné funkcie:
+readUserConfigSafe()    - načítanie user_config.json
+applyRuntimeConfig()    - aplikovanie konfigurácie
+
+IO helper funkcie:
+getByPath()             - čítanie hodnoty z IO objektu
+setByPath()             - zápis hodnoty do IO objektu
+
+Modbus komunikácia:
+attachSocketHandlers()  - obsluha socket udalostí
+makeClient()            - vytvorenie Modbus klienta
+connectModbus()         - pripojenie na Modbus server
+restartModbus()         - reštart spojenia
+recordModbusLatency()   - meranie komunikačnej latencie
+
+Synchronizácia:
+modbusToIo()            - PLC -> simulátor
+ioToModbus()            - simulátor -> PLC
+startTick()             - hlavný synchronizačný cyklus
+
+WebSocket:
+wss.on("connection")    - komunikácia so simulátorom
+
+Settings API:
+GET  /api/config        - načítanie konfigurácie
+POST /api/config        - uloženie konfigurácie
+
+====================================================
+*/
 
 const express = require("express");
 const path = require("path");
@@ -32,10 +44,7 @@ const os = require("os");
 const net = require("net");
 const fs = require("fs");
 
-try 
-{
-  require("dotenv").config();
-} catch {}
+
 
 const { WebSocketServer } = require("ws");
 const Modbus = require("jsmodbus");
@@ -103,8 +112,6 @@ applyRuntimeConfig(readUserConfigSafe());
 const app = express();
 app.use(express.static(root));
 
-
-
 const server = app.listen(HTTP_PORT, () =>
 {
   const port = server.address().port;
@@ -170,7 +177,6 @@ wss.on("connection", (ws) =>
 
         console.log("[WS] Mapa scény prijatá a IO resetované.");
 
-        // hneď pošli klientovi čistý sync
         ws.send(JSON.stringify({ type: "sync", IO }));
       }
     }
@@ -241,8 +247,6 @@ function makeClient() {
 
 function connectModbus() {
   if (!socket || !mbClient) makeClient();
-
-  // ak už je socket otvorený alebo sa pripája, neskúšaj znova
   if (socket.connecting) return;
   if (!socket.destroyed && socket.remoteAddress) return;
 
@@ -282,7 +286,7 @@ function recordModbusLatency(ms)
 connectModbus();
 
 /* =========================
-   MODBUS - IO FUNKCIE
+   MODBUS - IO FUNKCIA
    ========================= */
 async function modbusToIo()
 {
@@ -372,7 +376,6 @@ async function ioToModbus()
   if (!currentSceneMap) return;
   if (!mbClient || !socket || socket.destroyed) return;
 
-  // Zápis coils (digitálne vstupy PLC)
   if (currentSceneMap.outputCoils)
   {
     const addrs = Object.keys(currentSceneMap.outputCoils)

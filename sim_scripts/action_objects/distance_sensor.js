@@ -24,7 +24,7 @@ function createDistanceSensor({
     update()
     {
       if (!this.enabled) return;
-
+      
       // Aktualizuj smer podľa rotácie ak je zadaná
       if (this.rotation instanceof THREE.Euler)
       {
@@ -35,7 +35,7 @@ function createDistanceSensor({
       this.raycaster.set(this.origin, this.direction);
       this.raycaster.far = this.length;
 
-      const hits = this.raycaster.intersectObjects(this.targetObjects, true);
+      const hits = this.raycaster.intersectObjects(this.targetObjects, true); //meranie {distance, object}
 
       if (hits.length > 0)
       {

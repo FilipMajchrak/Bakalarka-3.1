@@ -7,27 +7,33 @@
     debug: { hitbox: false, stats: true }
   };
 
-  function deepMerge(base, incoming) {
+  function deepMerge(base, incoming) 
+  {
     const out = structuredClone(base);
     if (!incoming || typeof incoming !== "object") return out;
 
-    for (const [k, v] of Object.entries(incoming)) {
-      if (v && typeof v === "object" && !Array.isArray(v)) {
+    for (const [k, v] of Object.entries(incoming)) 
+    {
+      if (v && typeof v === "object" && !Array.isArray(v)) 
+      {
         out[k] = deepMerge(out[k] ?? {}, v);
-      } else {
+      } else 
+      {
         out[k] = v;
       }
     }
     return out;
   }
 
-  function clampInt(value, min, max, fallback) {
+  function clampInt(value, min, max, fallback) 
+  {
     const n = Number.parseInt(String(value), 10);
     if (!Number.isFinite(n)) return fallback;
     return Math.min(max, Math.max(min, n));
   }
 
-  function sanitize(cfg) {
+  function sanitize(cfg) 
+  {
     const theme = cfg?.theme === "light" ? "light" : "dark";
 
     const host = String(cfg?.modbus?.host ?? DEFAULT_CONFIG.modbus.host).trim() || DEFAULT_CONFIG.modbus.host;
@@ -45,33 +51,38 @@
     };
   }
 
-  class SettingsManager {
-    constructor() {
+  class SettingsManager 
+  {
+    constructor() 
+    {
       this.config = structuredClone(DEFAULT_CONFIG);
       this.listeners = new Set();
       this.loaded = false;
     }
 
-    onChange(fn) {
+    onChange(fn) 
+    {
       this.listeners.add(fn);
       return () => this.listeners.delete(fn);
     }
 
-    _emit() {
-      for (const fn of this.listeners) {
+    _emit() 
+    {
+      for (const fn of this.listeners) 
+      {
         try { fn(this.get()); } catch (e) { console.warn("[Settings] listener error:", e); }
       }
     }
 
-    get() {
-      return structuredClone(this.config);
-    }
+    get() {return structuredClone(this.config);}
 
-    set(path, value) {
+    set(path, value) 
+    {
       const parts = String(path).split(".");
       let obj = this.config;
 
-      for (let i = 0; i < parts.length - 1; i++) {
+      for (let i = 0; i < parts.length - 1; i++) 
+      {
         const p = parts[i];
         if (!obj[p] || typeof obj[p] !== "object") obj[p] = {};
         obj = obj[p];
@@ -84,7 +95,8 @@
     }
 
     // RESET do default (iba lokálne v UI)
-    reset() {
+    reset() 
+    {
       this.config = structuredClone(DEFAULT_CONFIG);
       this.config = sanitize(this.config);
       this.applyTheme();
@@ -93,20 +105,23 @@
     }
 
     //  RESET + uloženie na server (prepíše user_config.json cez tvoje POST /api/config)
-    async resetAndSave() {
+    async resetAndSave() 
+    {
       this.reset();
       await this.save();
       return true;
     }
 
-    applyTheme() {
+    applyTheme() 
+    {
       const t = this.config.theme === "light" ? "light" : "dark";
       document.body.classList.toggle("theme-light", t === "light");
       document.body.classList.toggle("theme-dark", t === "dark");
       document.documentElement.dataset.theme = t;
     }
 
-    async load() {
+    async load() 
+    {
       const res = await fetch("/api/config", { cache: "no-store" });
       if (!res.ok) throw new Error(`GET /api/config failed: ${res.status}`);
       const data = await res.json();
@@ -121,7 +136,8 @@
       return this.get();
     }
 
-    async save() {
+    async save() 
+    {
       const payload = this.get();
 
       const res = await fetch("/api/config", {

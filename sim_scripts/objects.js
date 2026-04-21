@@ -52,7 +52,8 @@ function loadOBJModel({scene,url,position = [0, 0, 0],scale = [1, 1, 1],rotation
   });
 }
 
-function loadConcaveOBJModel ({ scene, url, position, scale, rotation, mass = 0, onLoaded }) {
+function loadConcaveOBJModel ({ scene, url, position, scale, rotation, mass = 0, onLoaded }) 
+{
   const loader = new THREE.OBJLoader();
 
   loader.load(url, function (obj) {

@@ -1,3 +1,13 @@
+/*
+Pri fyzike piestu vzniká konflikt medzi ručne riadeným pohybom a fyzikálnou simuláciou,
+preto je skript rozsiahlejší. Riešenie využíva kinematický pohyb, ručné nastavovanie rýchlosti
+a vlastnú logiku kolíznej odozvy.
+
+
+Totálny počet hodín strávený na tomto špagetovom kóde: 7
+
+*/
+
 const Pistons = [];
 
 function createPiston(

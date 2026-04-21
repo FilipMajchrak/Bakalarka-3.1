@@ -15,14 +15,8 @@
 
     sections[key]?.classList.remove('d-none');
 
-    menuBtns.forEach(b =>
-    {
-      b.classList.remove('active');
-    });
-
-    document
-      .querySelector(`.list-group-item[data-section="${key}"]`)
-      ?.classList.add('active');
+    menuBtns.forEach(b =>{b.classList.remove('active');});
+    document.querySelector(`.list-group-item[data-section="${key}"]`)?.classList.add('active');
   }
 
   menuBtns.forEach(btn =>
@@ -83,7 +77,7 @@
     dbgStats.addEventListener("change", syncGraphsWindow);
 
 
-    // helper: naplň UI z configu
+    // helper: naplň UI z configu alebo default
     function fillFormFromConfig(cfg)
     {
       cfg = cfg || {};
@@ -167,8 +161,6 @@
       }
     });
 
-
     // defaultná sekcia
     showSection("modbus");
-
   });

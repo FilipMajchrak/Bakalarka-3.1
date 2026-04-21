@@ -30,14 +30,8 @@ window.ws.onmessage = (event) =>
         return;
       }
 
-      // vezmi default IO aktuálnej scény
-      const defaults =
-        window.sceneManager?.currentScene &&
-        typeof window.sceneManager.currentScene.getDefaultIO === "function"
-          ? window.sceneManager.currentScene.getDefaultIO()
-          : { inputs: {}, outputs: {} };
+      const defaults = window.sceneManager?.currentScene && typeof window.sceneManager.currentScene.getDefaultIO === "function"? window.sceneManager.currentScene.getDefaultIO() : { inputs: {}, outputs: {} };
 
-      // prepíš celé IO, nemerguj so starým window.IO
       window.IO = {
         inputs: {
           ...(defaults.inputs || {}),
@@ -63,12 +57,7 @@ window.ws.onmessage = (event) =>
         }, "*");
       }
 
-      if (
-        data.stats &&
-        typeof data.stats.modbusLastMs === "number" &&
-        window.graphWindow &&
-        !window.graphWindow.closed
-      )
+      if (data.stats &&typeof data.stats.modbusLastMs === "number" &&window.graphWindow && !window.graphWindow.closed)
       {
         window.graphWindow.postMessage({
           type: "modbus",
@@ -108,9 +97,7 @@ function sendSceneToServer()
   const scene = window.sceneManager.currentScene;
   const sceneName = scene.constructor.name;
   const modbusMap = (typeof scene.getModbusMap === "function") ? scene.getModbusMap() : null;
-  const defaultIO = (typeof scene.getDefaultIO === "function")
-    ? scene.getDefaultIO()
-    : { inputs: {}, outputs: {} };
+  const defaultIO = (typeof scene.getDefaultIO === "function") ? scene.getDefaultIO() : { inputs: {}, outputs: {} };
 
   window.ws.send(JSON.stringify({
     type: "scene",
@@ -157,12 +144,12 @@ window.onload = async function ()
   Physijs.scripts.worker = 'sim_scripts/physi/physijs_worker.js'; // cesta k worker skriptu
   Physijs.scripts.ammo   = 'sim_scripts/physi/ammo.js';           // cesta k fyzikálnemu jadru (Ammo.js)
 
-  const clock = new THREE.Clock(); // Hodiny pre výpočet deltaTime (čas medzi snímkami)
+  const clock = new THREE.Clock(); 
 
   // ==========================
   // Vytvorenie kamery a renderer-a
   // ==========================
-  const camera = createCamera(); // THREE.PerspectiveCamera s FOV, near/far clipping atď.
+  const camera = createCamera(); 
 
   const renderer = new THREE.WebGLRenderer(); // Hlavný vykresľovací engine
   renderer.setSize(window.innerWidth, window.innerHeight); // Nastavenie veľkosti podľa okna
@@ -170,16 +157,12 @@ window.onload = async function ()
   const theme = await getTheme();
   renderer.setClearColor(theme === "light" ? 0xe6f0ff : 0x252526);
 
-  document.getElementById('three-container').appendChild(renderer.domElement); // Pripoj renderer do DOM
+  document.getElementById('three-container').appendChild(renderer.domElement); 
 
-  // ==========================
-  // Nastavenie ovládania kamery (fly controls)
-  // ==========================
+  // Nastavenie ovládania kamery
   const controls = setupPointerFlyControls(camera, renderer);
 
-  // ==========================
   // Inicializácia správcu scén a načítanie scény
-  // ==========================
   window.sceneManager = new SceneManager(renderer, camera);
 
   // vytvorenie sceny
@@ -189,14 +172,12 @@ window.onload = async function ()
   sendSceneToServer();
   sendSceneMapToGraphWindow();
 
-  // ==========================
   // Prispôsobenie renderera a kamery pri zmene veľkosti okna
-  // ==========================
   window.addEventListener('resize', function ()
   {
-    camera.aspect = window.innerWidth / window.innerHeight; // Aktualizuj aspect ratio
-    camera.updateProjectionMatrix();                        // Prepočítaj projekciu
-    renderer.setSize(window.innerWidth, window.innerHeight); // Zmeň veľkosť renderer-a
+    camera.aspect = window.innerWidth / window.innerHeight; 
+    camera.updateProjectionMatrix();                       
+    renderer.setSize(window.innerWidth, window.innerHeight); 
   });
 
   // ==========================
@@ -208,20 +189,13 @@ window.onload = async function ()
 
   function animate()
   {
-    requestAnimationFrame(animate);       // Rekurzívne volanie animácie každé frame (~60 fps)
+    requestAnimationFrame(animate);       // Rekurzívne volanie animácie každé frame 
     const frameStart = performance.now();
     controls.updateCameraPosition();      // Pohyb a rotácia kamery podľa vstupu
 
-    const deltaTime = clock.getDelta();   // Čas medzi snímkami (v sekundách)
-    sceneManager.update(deltaTime);       // Aktualizuj a vykresli aktuálnu scénu
+    const deltaTime = clock.getDelta();  
+    sceneManager.update(deltaTime);       
 
-    // Volanie PLC logiky
-    if (typeof PLC_Update === 'function') 
-    {
-      PLC_Update();
-    }
-    
-    // posielaj celé IO (inputs aj outputs), nie len outputs
     if (window.ws && window.ws.readyState === WebSocket.OPEN) 
     {
       window.ws.send(JSON.stringify({
@@ -283,5 +257,5 @@ window.onload = async function ()
     }
   }
 
-  animate(); // Spusti animáciu
+  animate(); 
 };
