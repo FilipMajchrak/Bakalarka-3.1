@@ -1,13 +1,13 @@
 {
-  "theme": "dark",
+  "theme": "light",
   "modbus": {
     "host": "127.0.0.1",
     "port": 1502,
     "unitId": 1,
-    "tickMs": 1000
+    "tickMs": 500
   },
   "debug": {
     "hitbox": false,
-    "stats": false
+    "stats": true
   }
 }
