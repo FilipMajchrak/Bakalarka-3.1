@@ -69,6 +69,8 @@ let modbusStats = {
   sumMs: 0
 };
 
+let modbusConnected = false;
+
 /* =========================
    EXPRESS SERVER
    ========================= */
@@ -143,7 +145,7 @@ wss.on("connection", (ws) =>
   lastBrowserClient = ws;
   console.log("WS: simulátor pripojený");
 
-  ws.send(JSON.stringify({ type: "sync", IO }));
+  ws.send(JSON.stringify({ type: "sync", IO ,connection:{modbus:modbusConnected}}));
 
   ws.on("message", (msg) =>
   {
@@ -177,7 +179,7 @@ wss.on("connection", (ws) =>
 
         console.log("[WS] Mapa scény prijatá a IO resetované.");
 
-        ws.send(JSON.stringify({ type: "sync", IO }));
+        ws.send(JSON.stringify({ type: "sync", IO ,connection:{modbus:modbusConnected}}));
       }
     }
     catch (e)
@@ -226,14 +228,17 @@ let mbClient = null;
 
 function attachSocketHandlers() {
   socket.on("connect", () => {
+    modbusConnected = false;
     console.log(`[MB] Pripojené na ${MB_HOST}:${MB_PORT} (UnitId=${MB_UNIT_ID})`);
   });
 
   socket.on("error", (err) => {
+    modbusConnected = false;
     console.error("[MB] Chyba:", err.message);
   });
 
   socket.on("close", () => {
+    modbusConnected = false;
     console.warn("[MB] Spojenie zatvorené, pokus znova o 3s...");
     setTimeout(() => connectModbus(), 3000);
   });
@@ -317,9 +322,11 @@ async function modbusToIo()
 
         setByPath(IO, conf.path, !!bit);
         vals.push(bit);
+        modbusConnected = true;
       }
       catch (e)
       {
+        modbusConnected = false;
         console.warn(`[MB][READ DI] addr=${addr} error: ${e.message}`);
         vals.push("E");
       }
@@ -356,9 +363,11 @@ async function modbusToIo()
 
         setByPath(IO, conf.path, val);
         vals.push(raw);
+        modbusConnected = true;
       }
       catch (e)
       {
+        modbusConnected = false;
         console.warn(`[MB][READ IR] addr=${addr} error: ${e.message}`);
         vals.push("E");
       }
@@ -398,9 +407,11 @@ async function ioToModbus()
         const elapsed = performance.now() - start;
         recordModbusLatency(elapsed);
         vals.push(bit ? 1 : 0);
+        modbusConnected = true
       }
       catch (e)
       {
+        modbusConnected = false;
         console.warn(`[MB][WRITE C ] addr=${addr} error: ${e.message}`);
         vals.push("E");
       }
@@ -435,9 +446,11 @@ async function ioToModbus()
         const elapsed = performance.now() - start;
         recordModbusLatency(elapsed);
         vals.push(scaled);
+        modbusConnected = true;
       }
       catch (e)
       {
+        modbusConnected = false;
         console.warn(`[MB][WRITE HR] addr=${addr} error: ${e.message}`);
         vals.push("E");
       }
@@ -481,6 +494,7 @@ function startTick()
         lastBrowserClient.send(JSON.stringify({
           type: "sync",
           IO,
+          connection: {modbus: modbusConnected},
           stats: {
             modbusLastMs: Number(modbusStats.lastMs.toFixed(2)),
             modbusMinMs: modbusStats.minMs === Infinity ? 0 : Number(modbusStats.minMs.toFixed(2)),

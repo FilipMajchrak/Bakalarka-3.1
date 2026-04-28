@@ -44,7 +44,7 @@
 
 <body>
   <!-- NAVBAR -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-3">
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-3 position-relative">
     <a class="navbar-brand mb-0 h1" href="#">ST Simulátor</a>
 
     <button
@@ -58,6 +58,22 @@
     >
       <span class="navbar-toggler-icon"></span>
     </button>
+
+    <div class="d-flex align-items-center gap-2" id="connectionStatus" style="
+      position:absolute;
+      left:50%;
+      transform:translateX(-50%);
+    ">
+      <span>Connection:</span>
+      <span id="statusDot" style="
+        width:10px;
+        height:10px;
+        border-radius:50%;
+        background:red;
+        display:inline-block;
+      "></span>
+      <span id="statusText">Disconnected</span>
+    </div>
 
     <div class="collapse navbar-collapse" id="mainNavbar">
       <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-3">
@@ -114,16 +130,50 @@
 </body>
 
 <script>
-  document.addEventListener("DOMContentLoaded", async () => {
-    try {
-      await window.Settings.load();     // natiahne /api/config a aplikuje theme
-    } catch (e) {
+  function setConnectionStatus(connected)
+  {
+    const dot = document.getElementById("statusDot");
+    const text = document.getElementById("statusText");
+
+    if (!dot || !text) return;
+
+    if (connected)
+    {
+      dot.style.background = "limegreen";
+      text.innerText = "Connected";
+    }
+    else
+    {
+      dot.style.background = "red";
+      text.innerText = "Disconnected";
+    }
+  }
+
+  function handleConnectionMessage(data)
+  {
+    if (data.connection && typeof data.connection.modbus === "boolean")
+    {
+      setConnectionStatus(data.connection.modbus);
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", async () =>
+  {
+    try
+    {
+      await window.Settings.load();
+    }
+    catch (e)
+    {
       console.warn("[Settings] load failed, fallback to default:", e);
-      window.Settings.applyTheme();     // aspoň nastaví dark/light podľa defaultu
+
+      if (window.Settings && window.Settings.applyTheme)
+      {
+        window.Settings.applyTheme();
+      }
     }
   });
 
-  let graphsWindow = null;
   let shouldOpenGraphsOnFirstClick = false;
 
   document.addEventListener("DOMContentLoaded", async () =>
@@ -141,19 +191,11 @@
       const cfg = window.Settings.get() || {};
       const debug = cfg.debug || {};
 
-      console.log("Načítaný config:", cfg);
-      console.log("debug.stats =", debug.stats);
-
       shouldOpenGraphsOnFirstClick = !!debug.stats;
     }
     catch (e)
     {
       console.warn("[Settings] load failed:", e);
-
-      if (window.Settings.applyTheme)
-      {
-        window.Settings.applyTheme();
-      }
     }
   });
 
@@ -171,7 +213,7 @@
 
         if (!window.graphWindow)
         {
-          console.warn("Prehliadač zablokoval otvorenie graph.html aj po kliknutí.");
+          console.warn("Prehliadač zablokoval otvorenie graph.html.");
           return;
         }
       }
@@ -179,6 +221,5 @@
       shouldOpenGraphsOnFirstClick = false;
     }
   });
-
 </script>
 </html>

@@ -21,6 +21,12 @@ window.ws.onmessage = (event) =>
   try
   {
     const data = JSON.parse(event.data);
+    console.log("WS DATA:", data);
+
+    if (typeof handleConnectionMessage === "function")
+    {
+      handleConnectionMessage(data);
+    }
 
     if (data.type === "sync" && data.IO)
     {
