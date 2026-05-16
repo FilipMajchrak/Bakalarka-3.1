@@ -36,7 +36,7 @@
 /* header: oprav zarovnanie tlačidiel (baseline robilo bordel) */
 .settings-page .settings-header {
   display: flex;
-  align-items: center;        /* ✅ namiesto baseline */
+  align-items: center;      
   justify-content: space-between;
   gap: 0.75rem;
   margin-bottom: 0.35rem;
@@ -49,7 +49,7 @@
 
 .settings-page .settings-subtitle {
   margin: 0.15rem 0 0 0;
-  color: #b4b8be;             /* tmavý režim: čitateľnejšie než #9aa0a6 */
+  color: #b4b8be;            
   font-size: 0.82rem;
 }
 
@@ -57,7 +57,7 @@
 .settings-page .settings-header .btn,
 .settings-page .settings-header button.btn,
 .settings-page .settings-header a.btn {
-  display: inline-flex;       /* ✅ aby text + ikonka sedeli na stred */
+  display: inline-flex;       
   align-items: center;
   justify-content: center;
   white-space: nowrap;
@@ -79,7 +79,7 @@
 
 .settings-page .settings-section h6 {
   margin: 0 0 0.45rem 0;
-  color: #e0e0e0;             /* tmavý režim: lepší kontrast */
+  color: #e0e0e0;            
   font-size: 0.95rem;
 }
 
@@ -96,7 +96,7 @@
 .settings-page .form-label {
   margin-bottom: 0.25rem;
   font-size: 0.85rem;
-  color: #e0e0e0;             /* ✅ výraznejšie */
+  color: #e0e0e0;           
 }
 
 .settings-page .form-control,
@@ -158,7 +158,7 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  min-height: 44px;           /* ✅ aby výška sedela s btn */
+  min-height: 44px;         
 }
 
 .settings-page .settings-title {
@@ -171,7 +171,7 @@
   margin: 0.15rem 0 0 0;
   line-height: 1.15;
   font-size: 0.82rem;
-  color: #b4b8be;             /* čitateľnejšie */
+  color: #b4b8be;             
 }
 
 /* tlačidlá v headeri nech sú rovnaké výškou a zarovnané */
